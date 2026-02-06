@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { 
   Plus, Trash2, Download, FileText, Building, User, Settings, 
@@ -138,9 +137,17 @@ const App: React.FC = () => {
     const button = document.getElementById('download-btn');
     const mobileButton = document.getElementById('download-btn-mobile');
     if (button) button.innerText = "作成中...";
-    if (mobileButton) mobileButton.innerText = "中...";
+    if (mobileButton) mobileButton.innerText = "生成中...";
     try {
-      const canvas = await html2canvas(previewRef.current, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
+      // Force desktop width to ensure correct layout and scale on mobile devices
+      const canvas = await html2canvas(previewRef.current, { 
+        scale: 3, 
+        useCORS: true, 
+        backgroundColor: '#ffffff',
+        windowWidth: 1280, // Simulate desktop view for correct media query application
+        width: previewRef.current.offsetWidth,
+        height: previewRef.current.offsetHeight
+      });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
@@ -151,7 +158,10 @@ const App: React.FC = () => {
         setHistory(getInvoiceHistory(user.email));
       }
       alert("PDFをダウンロードしました！✨\n※いかなる損害についても当サービスは責任を負いません。");
-    } catch (e) { alert("PDF作成に失敗しました。"); }
+    } catch (e) { 
+      console.error(e);
+      alert("PDF作成に失敗しました。"); 
+    }
     finally { 
       if (button) button.innerText = "PDFをダウンロード"; 
       if (mobileButton) mobileButton.innerText = "PDF保存";
@@ -285,16 +295,6 @@ const App: React.FC = () => {
                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                   <textarea className="w-full text-sm font-bold border-none p-0 h-24 resize-none bg-white focus:ring-0" placeholder="振込手数料は貴社負担にて..." value={invoiceData.notes} onChange={e => setInvoiceData(d => ({ ...d, notes: e.target.value }))} />
                 </div>
-              </div>
-
-              {/* Ad Placeholder for Sidebar */}
-              <div className="p-4 bg-slate-100 border border-slate-200 rounded-3xl min-h-[150px] flex flex-col items-center justify-center relative overflow-hidden">
-                <span className="text-[8px] font-black text-slate-400 absolute top-2 right-4 uppercase tracking-[0.2em]">Advertisement</span>
-                <Info size={24} className="text-slate-300 mb-2" />
-                <p className="text-[10px] font-bold text-slate-400 text-center px-4 leading-relaxed">
-                  ここにGoogle AdSense広告が表示されます。<br/>
-                  (審査通過後に配信)
-                </p>
               </div>
             </div>
           )}
@@ -438,13 +438,6 @@ const App: React.FC = () => {
       </aside>
 
       <main className={`${mobileView === 'preview' ? 'flex' : 'hidden lg:flex'} flex-1 flex-col items-center overflow-y-auto p-4 lg:p-12 bg-[#F8FAFC] relative custom-scrollbar h-full`}>
-        {/* Ad Space for Main Content (Placeholder for AdSense) */}
-        <div className="w-full max-w-[210mm] mb-6 no-print">
-           <div className="bg-white/50 border border-slate-100 rounded-2xl h-24 flex items-center justify-center relative overflow-hidden">
-             <span className="text-[8px] font-black text-slate-300 absolute top-2 right-4 uppercase tracking-[0.2em]">Sponsored</span>
-             <p className="text-[10px] font-bold text-slate-300">Google AdSense Area</p>
-           </div>
-        </div>
 
         <div className="w-full max-w-[210mm] mb-12 hidden lg:flex justify-between items-center no-print">
           <div className="flex items-center gap-5 bg-white px-7 py-4 rounded-[2rem] shadow-xl border border-white">
@@ -467,10 +460,10 @@ const App: React.FC = () => {
            <button 
              id="download-btn-mobile"
              onClick={downloadPdf}
-             className="bg-indigo-600 text-white p-5 rounded-full shadow-2xl animate-bounce-slow"
+             className="bg-indigo-600 text-white p-4 rounded-full shadow-2xl animate-bounce-slow"
              title="PDFを保存"
            >
-             <Download size={26} />
+             <Download size={20} />
            </button>
         </div>
 
@@ -516,18 +509,18 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <div className="lg:hidden fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-slate-900/90 backdrop-blur-xl p-2 rounded-full shadow-2xl z-[100] border border-white/20 scale-110">
+      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-slate-900/90 backdrop-blur-xl p-1.5 rounded-full shadow-2xl z-[100] border border-white/20">
          <button 
            onClick={() => setMobileView('edit')}
-           className={`flex items-center gap-2 px-8 py-3.5 rounded-full font-black text-xs transition-all ${mobileView === 'edit' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}
+           className={`flex items-center gap-2 px-6 py-3 rounded-full font-black text-xs transition-all ${mobileView === 'edit' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}
          >
-           <Edit3 size={16}/> 入力
+           <Edit3 size={14}/> 入力
          </button>
          <button 
            onClick={() => setMobileView('preview')}
-           className={`flex items-center gap-2 px-8 py-3.5 rounded-full font-black text-xs transition-all ${mobileView === 'preview' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}
+           className={`flex items-center gap-2 px-6 py-3 rounded-full font-black text-xs transition-all ${mobileView === 'preview' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}
          >
-           <Eye size={16}/> プレビュー
+           <Eye size={14}/> プレビュー
          </button>
       </div>
 
