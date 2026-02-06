@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://seikyuai.com/sitemap.xml
