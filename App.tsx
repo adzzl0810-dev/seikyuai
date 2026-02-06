@@ -138,28 +138,40 @@ const App: React.FC = () => {
     setIsGeneratingPdf(true);
 
     try {
-      // Fix for Mobile PDF Scaling:
-      // Force html2canvas to simulate a desktop environment (windowWidth: 1280)
-      // and explicitly set the canvas capture dimensions to A4 pixel width (~794px at 96DPI).
+      // PDF Generation Constants (A4 96DPI)
       const A4_WIDTH_PX = 794; 
       const A4_HEIGHT_PX = 1123;
 
       const canvas = await html2canvas(previewRef.current, { 
-        scale: 3, // High resolution for clear text
+        scale: 3, // High resolution
         useCORS: true, 
         backgroundColor: '#ffffff',
-        windowWidth: 1280, // Simulate desktop view to trigger 'md:' Tailwind classes
-        width: A4_WIDTH_PX, // Force A4 width capture
-        height: Math.max(previewRef.current.scrollHeight, A4_HEIGHT_PX), // Capture full height
+        // Simulate a large desktop screen to enforce desktop CSS rules (like md:p-[20mm])
+        windowWidth: 1920, 
+        windowHeight: 1080,
+        // Explicitly set capture position and size to avoid scroll offsets
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0,
+        width: A4_WIDTH_PX,
+        height: Math.max(previewRef.current.scrollHeight, A4_HEIGHT_PX), // Ensure we capture full height
         onclone: (clonedDoc) => {
           const el = clonedDoc.querySelector('.print-area') as HTMLElement;
           if (el) {
-            // Force desktop layout styles on the cloned element
+            // Force strict A4 styling on the cloned element
+            // This ensures content is exactly 210mm wide and has correct padding/margins
             el.style.width = '210mm';
             el.style.minHeight = '297mm';
-            el.style.padding = '20mm'; // Ensure desktop padding is applied
-            el.style.margin = '0 auto';
-            el.style.transform = 'none'; // Reset any scaling transforms
+            el.style.padding = '20mm'; // Enforce desktop padding
+            el.style.margin = '0'; // CRITICAL: Reset margin to 0 to align with x:0 capture
+            el.style.transform = 'none'; // Reset any mobile scaling
+            el.style.boxSizing = 'border-box';
+            
+            // Clean up mobile artifacts
+            el.style.borderRadius = '0';
+            el.style.boxShadow = 'none';
+            el.style.position = 'static';
           }
         }
       });
@@ -171,6 +183,7 @@ const App: React.FC = () => {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       
+      // Add image at (0,0) with full A4 width
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`請求書_${invoiceData.invoiceNumber}.pdf`);
       
@@ -484,10 +497,10 @@ const App: React.FC = () => {
              id="download-btn-mobile"
              onClick={downloadPdf}
              disabled={isGeneratingPdf}
-             className="bg-indigo-600 text-white p-3 rounded-full shadow-2xl active:scale-90 transition-transform disabled:opacity-70 disabled:bg-indigo-400"
+             className="bg-indigo-600 text-white p-2.5 rounded-full shadow-2xl active:scale-90 transition-transform disabled:opacity-70 disabled:bg-indigo-400"
              title="PDFを保存"
            >
-             {isGeneratingPdf ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
+             {isGeneratingPdf ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
            </button>
         </div>
 
@@ -536,13 +549,13 @@ const App: React.FC = () => {
       <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-slate-900/90 backdrop-blur-xl p-1 rounded-full shadow-2xl z-[100] border border-white/20">
          <button 
            onClick={() => setMobileView('edit')}
-           className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-black text-[10px] transition-all ${mobileView === 'edit' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}
+           className={`flex items-center gap-2 px-4 py-2 rounded-full font-black text-[10px] transition-all ${mobileView === 'edit' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}
          >
            <Edit3 size={14}/> 入力
          </button>
          <button 
            onClick={() => setMobileView('preview')}
-           className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-black text-[10px] transition-all ${mobileView === 'preview' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}
+           className={`flex items-center gap-2 px-4 py-2 rounded-full font-black text-[10px] transition-all ${mobileView === 'preview' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}
          >
            <Eye size={14}/> プレビュー
          </button>
