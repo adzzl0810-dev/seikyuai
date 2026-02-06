@@ -6,6 +6,7 @@ import {
   Palette, MousePointer2, Info, BookOpen, ShieldAlert, Eye, Edit3, Copy, RefreshCw,
   ExternalLink, Scale, Loader2, Mail, CheckCircle2, ArrowRight
 } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 import { InvoiceData, TaxRate, LineItem, InvoiceTotals, TaxSummary, TemplateId, UserProfile, SavedInvoice } from './types';
 import { InvoicePreview } from './components/InvoicePreview';
 import { fetchAddressByZip } from './services/addressService';
@@ -624,6 +625,7 @@ const App: React.FC = () => {
       <PrivacyPolicyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
       <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
       <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
+      <Analytics />
       
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
