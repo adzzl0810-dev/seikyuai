@@ -4,7 +4,7 @@ import {
   Stamp, Search, Check, AlertCircle, Save, History as HistoryIcon, X, 
   ChevronRight, ShieldCheck, Zap, LayoutTemplate, MapPin, Upload, LogIn, LogOut,
   Palette, MousePointer2, Info, BookOpen, ShieldAlert, Eye, Edit3, Copy, RefreshCw,
-  ExternalLink, Scale
+  ExternalLink, Scale, Loader2
 } from 'lucide-react';
 import { InvoiceData, TaxRate, LineItem, InvoiceTotals, TaxSummary, TemplateId, UserProfile, SavedInvoice } from './types';
 import { InvoicePreview } from './components/InvoicePreview';
@@ -43,6 +43,7 @@ const App: React.FC = () => {
   const [showHistory, setShowHistory] = useState(false);
   const [themeColor, setThemeColor] = useState('#4f46e5');
   const [mobileView, setMobileView] = useState<'edit' | 'preview'>('edit');
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   
   const [invoiceData, setInvoiceData] = useState<InvoiceData>(() => {
     const saved = loadDraft();
@@ -133,25 +134,46 @@ const App: React.FC = () => {
   };
 
   const downloadPdf = async () => {
-    if (!previewRef.current) return;
-    const button = document.getElementById('download-btn');
-    const mobileButton = document.getElementById('download-btn-mobile');
-    if (button) button.innerText = "作成中...";
-    if (mobileButton) mobileButton.innerText = "生成中...";
+    if (!previewRef.current || isGeneratingPdf) return;
+    setIsGeneratingPdf(true);
+
     try {
-      // Force desktop width to ensure correct layout and scale on mobile devices
+      // Fix for Mobile PDF Scaling:
+      // Force html2canvas to simulate a desktop environment (windowWidth: 1280)
+      // and explicitly set the canvas capture dimensions to A4 pixel width (~794px at 96DPI).
+      const A4_WIDTH_PX = 794; 
+      const A4_HEIGHT_PX = 1123;
+
       const canvas = await html2canvas(previewRef.current, { 
-        scale: 3, 
+        scale: 3, // High resolution for clear text
         useCORS: true, 
         backgroundColor: '#ffffff',
-        windowWidth: 1280, // Simulate desktop view for correct media query application
-        width: previewRef.current.offsetWidth,
-        height: previewRef.current.offsetHeight
+        windowWidth: 1280, // Simulate desktop view to trigger 'md:' Tailwind classes
+        width: A4_WIDTH_PX, // Force A4 width capture
+        height: Math.max(previewRef.current.scrollHeight, A4_HEIGHT_PX), // Capture full height
+        onclone: (clonedDoc) => {
+          const el = clonedDoc.querySelector('.print-area') as HTMLElement;
+          if (el) {
+            // Force desktop layout styles on the cloned element
+            el.style.width = '210mm';
+            el.style.minHeight = '297mm';
+            el.style.padding = '20mm'; // Ensure desktop padding is applied
+            el.style.margin = '0 auto';
+            el.style.transform = 'none'; // Reset any scaling transforms
+          }
+        }
       });
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
+      
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`請求書_${invoiceData.invoiceNumber}.pdf`);
+      
       if (user) {
         const saved: SavedInvoice = { ...invoiceData, id: crypto.randomUUID(), createdAt: Date.now(), templateId: template };
         saveInvoiceToHistory(user.email, saved);
@@ -163,8 +185,7 @@ const App: React.FC = () => {
       alert("PDF作成に失敗しました。"); 
     }
     finally { 
-      if (button) button.innerText = "PDFをダウンロード"; 
-      if (mobileButton) mobileButton.innerText = "PDF保存";
+      setIsGeneratingPdf(false);
     }
   };
 
@@ -450,9 +471,11 @@ const App: React.FC = () => {
           <button 
             id="download-btn"
             onClick={downloadPdf} 
-            className="group bg-slate-900 hover:bg-black text-white px-12 py-5 rounded-[2rem] font-black text-sm flex items-center gap-4 shadow-2xl transition-all hover:-translate-y-1 active:scale-95"
+            disabled={isGeneratingPdf}
+            className="group bg-slate-900 hover:bg-black text-white px-12 py-5 rounded-[2rem] font-black text-sm flex items-center gap-4 shadow-2xl transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Download size={24} strokeWidth={3} /> PDFをダウンロード
+            {isGeneratingPdf ? <Loader2 size={24} className="animate-spin" /> : <Download size={24} strokeWidth={3} />} 
+            {isGeneratingPdf ? "PDF作成中..." : "PDFをダウンロード"}
           </button>
         </div>
 
@@ -460,10 +483,11 @@ const App: React.FC = () => {
            <button 
              id="download-btn-mobile"
              onClick={downloadPdf}
-             className="bg-indigo-600 text-white p-4 rounded-full shadow-2xl animate-bounce-slow"
+             disabled={isGeneratingPdf}
+             className="bg-indigo-600 text-white p-3 rounded-full shadow-2xl active:scale-90 transition-transform disabled:opacity-70 disabled:bg-indigo-400"
              title="PDFを保存"
            >
-             <Download size={20} />
+             {isGeneratingPdf ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
            </button>
         </div>
 
@@ -509,16 +533,16 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-slate-900/90 backdrop-blur-xl p-1.5 rounded-full shadow-2xl z-[100] border border-white/20">
+      <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-slate-900/90 backdrop-blur-xl p-1 rounded-full shadow-2xl z-[100] border border-white/20">
          <button 
            onClick={() => setMobileView('edit')}
-           className={`flex items-center gap-2 px-6 py-3 rounded-full font-black text-xs transition-all ${mobileView === 'edit' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}
+           className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-black text-[10px] transition-all ${mobileView === 'edit' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}
          >
            <Edit3 size={14}/> 入力
          </button>
          <button 
            onClick={() => setMobileView('preview')}
-           className={`flex items-center gap-2 px-6 py-3 rounded-full font-black text-xs transition-all ${mobileView === 'preview' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}
+           className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-black text-[10px] transition-all ${mobileView === 'preview' ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-400 hover:text-white'}`}
          >
            <Eye size={14}/> プレビュー
          </button>
@@ -542,8 +566,5 @@ const App: React.FC = () => {
     </div>
   );
 };
-
-// Internal icon fix for App component
-const ShieldShield = ({size}: {size: number}) => <ShieldCheck size={size} />;
 
 export default App;
