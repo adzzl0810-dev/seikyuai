@@ -110,9 +110,10 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
       {/* Header Area */}
       <div className={`flex flex-col sm:flex-row justify-between items-start mb-12 gap-6 ${templateId === 'grid' ? 'border-b-2 pb-6' : ''}`}>
         <div className="w-full sm:w-auto">
-          <h1 className="text-4xl font-black tracking-[0.2em] mb-4 uppercase leading-tight" style={{ color: templateId === 'monochrome' ? '#000' : accentColor }}>
+          {/* SEO Optimized: Changed h1 to h2, keeping h1 for site title only */}
+          <h2 className="text-4xl font-black tracking-[0.2em] mb-4 uppercase leading-tight" style={{ color: templateId === 'monochrome' ? '#000' : accentColor }}>
             {templateId === 'simple' ? 'Invoice' : '御請求書'}
-          </h1>
+          </h2>
           <div className="space-y-1 text-sm">
             <p className="font-bold">No. <span className="text-slate-500">{data.invoiceNumber}</span></p>
             <p className="text-slate-500">発行日: {formatDate(data.date)}</p>
