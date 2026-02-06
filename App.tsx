@@ -4,7 +4,7 @@ import {
   Stamp, Search, Check, AlertCircle, Save, History as HistoryIcon, X, 
   ChevronRight, ShieldCheck, Zap, LayoutTemplate, MapPin, Upload, LogIn, LogOut,
   Palette, MousePointer2, Info, BookOpen, ShieldAlert, Eye, Edit3, Copy, RefreshCw,
-  ExternalLink, Scale, Loader2
+  ExternalLink, Scale, Loader2, Mail
 } from 'lucide-react';
 import { InvoiceData, TaxRate, LineItem, InvoiceTotals, TaxSummary, TemplateId, UserProfile, SavedInvoice } from './types';
 import { InvoicePreview } from './components/InvoicePreview';
@@ -18,6 +18,7 @@ import { AuthModal } from './components/AuthModal';
 import { TermsModal } from './components/TermsModal';
 import { GuideModal } from './components/GuideModal';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
+import { ContactModal } from './components/ContactModal';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -39,6 +40,7 @@ const App: React.FC = () => {
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isContactOpen, setIsContactOpen] = useState(false);
   const [history, setHistory] = useState<SavedInvoice[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [themeColor, setThemeColor] = useState('#4f46e5');
@@ -461,7 +463,7 @@ const App: React.FC = () => {
             <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center">
               <button onClick={() => setIsPrivacyOpen(true)} className="text-[9px] font-black text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1.5 uppercase tracking-tighter">Privacy Policy</button>
               <button onClick={() => setIsTermsOpen(true)} className="text-[9px] font-black text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1.5 uppercase tracking-tighter">Terms of Service</button>
-              <a href="https://google.com" target="_blank" rel="noopener noreferrer" className="text-[9px] font-black text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1.5 uppercase tracking-tighter">Support <ExternalLink size={8}/></a>
+              <button onClick={() => setIsContactOpen(true)} className="text-[9px] font-black text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1.5 uppercase tracking-tighter">お問い合わせ <Mail size={8}/></button>
             </div>
             <div className="flex justify-center">
                <button onClick={() => setIsGuideOpen(true)} className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-4 py-2 rounded-full transition-all hover:bg-indigo-100 flex items-center gap-1.5 shadow-sm active:scale-95"><BookOpen size={12}/> 使い方ガイド</button>
@@ -565,6 +567,7 @@ const App: React.FC = () => {
       <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
       <PrivacyPolicyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
       <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
+      <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
       
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
