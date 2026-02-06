@@ -4,7 +4,7 @@ import {
   Stamp, Search, Check, AlertCircle, Save, History as HistoryIcon, X, 
   ChevronRight, ShieldCheck, Zap, LayoutTemplate, MapPin, Upload, LogIn, LogOut,
   Palette, MousePointer2, Info, BookOpen, ShieldAlert, Eye, Edit3, Copy, RefreshCw,
-  ExternalLink, Scale, Loader2, Mail
+  ExternalLink, Scale, Loader2, Mail, CheckCircle2, ArrowRight
 } from 'lucide-react';
 import { InvoiceData, TaxRate, LineItem, InvoiceTotals, TaxSummary, TemplateId, UserProfile, SavedInvoice } from './types';
 import { InvoicePreview } from './components/InvoicePreview';
@@ -70,7 +70,7 @@ const App: React.FC = () => {
   });
 
   const [template, setTemplate] = useState<TemplateId>('modern');
-  const [activeTab, setActiveTab] = useState<'items' | 'client' | 'issuer' | 'settings'>('items');
+  const [activeTab, setActiveTab] = useState<'items' | 'client' | 'issuer' | 'settings' | 'guide'>('items');
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { saveDraft(invoiceData); }, [invoiceData]);
@@ -140,37 +140,30 @@ const App: React.FC = () => {
     setIsGeneratingPdf(true);
 
     try {
-      // PDF Generation Constants (A4 96DPI)
       const A4_WIDTH_PX = 794; 
       const A4_HEIGHT_PX = 1123;
 
       const canvas = await html2canvas(previewRef.current, { 
-        scale: 3, // High resolution
+        scale: 3, 
         useCORS: true, 
         backgroundColor: '#ffffff',
-        // Simulate a large desktop screen to enforce desktop CSS rules (like md:p-[20mm])
         windowWidth: 1920, 
         windowHeight: 1080,
-        // Explicitly set capture position and size to avoid scroll offsets
         x: 0,
         y: 0,
         scrollX: 0,
         scrollY: 0,
         width: A4_WIDTH_PX,
-        height: Math.max(previewRef.current.scrollHeight, A4_HEIGHT_PX), // Ensure we capture full height
+        height: Math.max(previewRef.current.scrollHeight, A4_HEIGHT_PX),
         onclone: (clonedDoc) => {
           const el = clonedDoc.querySelector('.print-area') as HTMLElement;
           if (el) {
-            // Force strict A4 styling on the cloned element
-            // This ensures content is exactly 210mm wide and has correct padding/margins
             el.style.width = '210mm';
             el.style.minHeight = '297mm';
-            el.style.padding = '20mm'; // Enforce desktop padding
-            el.style.margin = '0'; // CRITICAL: Reset margin to 0 to align with x:0 capture
-            el.style.transform = 'none'; // Reset any mobile scaling
+            el.style.padding = '20mm';
+            el.style.margin = '0';
+            el.style.transform = 'none';
             el.style.boxSizing = 'border-box';
-            
-            // Clean up mobile artifacts
             el.style.borderRadius = '0';
             el.style.boxShadow = 'none';
             el.style.position = 'static';
@@ -185,7 +178,6 @@ const App: React.FC = () => {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       
-      // Add image at (0,0) with full A4 width
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`請求書_${invoiceData.invoiceNumber}.pdf`);
       
@@ -237,7 +229,7 @@ const App: React.FC = () => {
         </header>
 
         <nav className="flex px-2 pt-2 border-b bg-white shrink-0 overflow-x-auto no-scrollbar">
-          {(['items', 'client', 'issuer', 'settings'] as const).map(tab => (
+          {(['items', 'client', 'issuer', 'settings', 'guide'] as const).map(tab => (
             <button 
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -245,7 +237,7 @@ const App: React.FC = () => {
                 activeTab === tab ? 'text-indigo-600' : 'text-slate-400'
               }`}
             >
-              {tab === 'items' ? '明細入力' : tab === 'client' ? '宛先' : tab === 'issuer' ? '自社' : 'デザイン'}
+              {tab === 'items' ? '明細入力' : tab === 'client' ? '宛先' : tab === 'issuer' ? '自社' : tab === 'settings' ? 'デザイン' : '使い方'}
               {activeTab === tab && <div className="absolute bottom-0 left-4 right-4 h-1 bg-indigo-600 rounded-t-full"></div>}
             </button>
           ))}
@@ -442,6 +434,70 @@ const App: React.FC = () => {
                     </div>
                   </div>
                </div>
+            </div>
+          )}
+
+          {activeTab === 'guide' && (
+            <div className="space-y-6 animate-in fade-in">
+              <div className="p-8 bg-white border-2 border-slate-50 rounded-[3rem] shadow-sm">
+                 <div className="flex items-center gap-3 mb-8">
+                   <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><BookOpen size={24}/></div>
+                   <div>
+                      <h2 className="font-black text-lg text-slate-800 tracking-tighter leading-none">使い方ガイド</h2>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">How to use</span>
+                   </div>
+                 </div>
+
+                 <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:w-0.5 before:bg-slate-100 before:-z-10">
+                   <div className="flex gap-4">
+                     <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-black text-lg shadow-lg shrink-0">1</div>
+                     <div className="flex-1 bg-slate-50 rounded-2xl p-5 border border-slate-100">
+                       <h3 className="font-black text-slate-800 mb-2 flex items-center gap-2">情報を入力する</h3>
+                       <p className="text-xs text-slate-500 font-medium leading-relaxed mb-3">
+                         「明細入力」「宛先」「自社」タブを切り替えて、必要な情報を入力してください。右側のプレビューにリアルタイムで反映されます。
+                       </p>
+                       <div className="flex gap-2">
+                         <span className="px-2 py-1 bg-white rounded text-[10px] font-bold border border-slate-100 text-slate-400">適格番号T+13桁</span>
+                         <span className="px-2 py-1 bg-white rounded text-[10px] font-bold border border-slate-100 text-slate-400">自動税計算</span>
+                       </div>
+                     </div>
+                   </div>
+
+                   <div className="flex gap-4">
+                     <div className="w-10 h-10 rounded-full bg-white border-2 border-slate-900 text-slate-900 flex items-center justify-center font-black text-lg shadow-sm shrink-0">2</div>
+                     <div className="flex-1 bg-slate-50 rounded-2xl p-5 border border-slate-100">
+                       <h3 className="font-black text-slate-800 mb-2 flex items-center gap-2">デザインを選ぶ</h3>
+                       <p className="text-xs text-slate-500 font-medium leading-relaxed mb-3">
+                         「デザイン」タブで、20種類のテンプレートとブランドカラーを選択できます。電子印鑑画像のアップロードも可能です。
+                       </p>
+                       <div className="flex items-center gap-2 text-indigo-500">
+                          <Palette size={16}/> <span className="text-[10px] font-black">プロ仕様のデザイン</span>
+                       </div>
+                     </div>
+                   </div>
+
+                   <div className="flex gap-4">
+                     <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-indigo-200 shadow-xl shrink-0">3</div>
+                     <div className="flex-1 bg-indigo-50/50 rounded-2xl p-5 border border-indigo-100">
+                       <h3 className="font-black text-indigo-900 mb-2 flex items-center gap-2">PDFをダウンロード</h3>
+                       <p className="text-xs text-indigo-800/70 font-medium leading-relaxed mb-4">
+                         入力が完了したら、右上の「PDFをダウンロード」ボタンを押すだけ。A4サイズで美しく出力されます。
+                       </p>
+                       <button onClick={() => setActiveTab('items')} className="bg-indigo-600 text-white px-4 py-2 rounded-xl text-xs font-black shadow-lg shadow-indigo-200 active:scale-95 transition-all flex items-center gap-2">
+                         今すぐ作成する <ArrowRight size={14}/>
+                       </button>
+                     </div>
+                   </div>
+                 </div>
+              </div>
+
+              <div className="bg-white p-6 rounded-[2.5rem] border-2 border-slate-50 shadow-sm flex items-center gap-4">
+                 <div className="bg-yellow-50 p-3 rounded-2xl text-yellow-600"><CheckCircle2 size={24}/></div>
+                 <div>
+                   <h3 className="font-black text-slate-800 text-sm mb-1">データは自動保存されます</h3>
+                   <p className="text-[10px] text-slate-400 font-bold">ブラウザを閉じても、次回アクセス時に続きから再開できます。</p>
+                 </div>
+              </div>
             </div>
           )}
         </div>
