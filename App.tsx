@@ -139,11 +139,16 @@ const App: React.FC = () => {
     setIsGeneratingPdf(true);
 
     try {
+      // Determine device to adjust scale
+      // Reduce scale for mobile devices to prevent memory issues and blank pages
+      const isMobile = window.innerWidth < 800;
+      const scale = isMobile ? 2 : 3;
+
       const A4_WIDTH_PX = 794; 
       const A4_HEIGHT_PX = 1123;
 
       const canvas = await html2canvas(previewRef.current, { 
-        scale: 3, 
+        scale: scale, 
         useCORS: true, 
         backgroundColor: '#ffffff',
         windowWidth: 1920, 
@@ -188,7 +193,7 @@ const App: React.FC = () => {
       alert("PDFをダウンロードしました！✨\n※いかなる損害についても当サービスは責任を負いません。");
     } catch (e) { 
       console.error(e);
-      alert("PDF作成に失敗しました。"); 
+      alert("PDF作成に失敗しました。スマホの場合はメモリ不足の可能性があります。"); 
     }
     finally { 
       setIsGeneratingPdf(false);
