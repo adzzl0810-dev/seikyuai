@@ -22,14 +22,14 @@ const formatDate = (dateStr: string) => {
 const StampComponent: React.FC<{ text: string; imageUrl?: string; color?: string }> = ({ text, imageUrl, color = '#ef4444' }) => {
   if (imageUrl) {
     return (
-      <div className="absolute top-[-25px] right-[-10px] opacity-90 pointer-events-none select-none mix-blend-multiply z-20">
+      <div className="relative inline-block mt-4 mr-2 opacity-90 select-none mix-blend-multiply z-20">
         <img src={imageUrl} alt="印影" className="w-[65px] h-[65px] object-contain" />
       </div>
     );
   }
   const stampText = text.slice(0, 4) || "印";
   return (
-    <div className="absolute top-[-10px] right-[-10px] opacity-80 pointer-events-none select-none mix-blend-multiply z-20 rotate-[-12deg]">
+    <div className="relative inline-block mt-4 mr-2 opacity-80 select-none mix-blend-multiply z-20 rotate-[-12deg]">
       <div className="w-14 h-14 border-[1.5px] border-red-500 rounded flex items-center justify-center relative bg-white/5">
         <div className="absolute inset-0.5 border border-red-500 rounded-sm"></div>
         <span className="text-red-500 font-serif font-bold text-[10px] writing-vertical-rl tracking-[0.2em] leading-none">
@@ -120,14 +120,15 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
             <p className="text-slate-500">支払期限: {formatDate(data.dueDate)}</p>
           </div>
         </div>
-        <div className="text-left sm:text-right relative pt-2 w-full sm:w-auto">
-           {data.issuer.enableStamp && <StampComponent text={data.issuer.name} imageUrl={data.issuer.stampImageUrl} />}
+        <div className="text-left sm:text-right relative pt-2 w-full sm:w-auto flex flex-col sm:items-end">
            <h3 className="text-2xl font-black mb-2 tracking-tight">{data.issuer.name || <span className="text-slate-200">自社名（サンプル）</span>}</h3>
            <div className="text-[11px] leading-relaxed text-slate-500">
              <p className="font-bold mb-1" style={{ color: accentColor }}>登録番号: {data.issuer.registrationNumber || 'T0000000000000'}</p>
              <p>〒{data.issuer.zipCode || '000-0000'} {data.issuer.address || '自社住所（サンプル）'}</p>
              <p>{(data.issuer.phone || data.issuer.email) ? `${data.issuer.phone} / ${data.issuer.email}` : 'TEL: 03-0000-0000 / info@example.com'}</p>
            </div>
+           {/* Stamp moved here, relative flow */}
+           {data.issuer.enableStamp && <StampComponent text={data.issuer.name} imageUrl={data.issuer.stampImageUrl} />}
         </div>
       </div>
 
