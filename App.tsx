@@ -4,7 +4,7 @@ import {
   Stamp, Search, Check, AlertCircle, Save, History as HistoryIcon, X, 
   ChevronRight, ShieldCheck, Zap, LayoutTemplate, MapPin, Upload, LogIn, LogOut,
   Palette, MousePointer2, Info, BookOpen, ShieldAlert, Eye, Edit3, Copy, RefreshCw,
-  ExternalLink, Scale, Loader2, Mail, CheckCircle2, ArrowRight
+  ExternalLink, Scale, Loader2, Mail, CheckCircle2, ArrowRight, FileType
 } from 'lucide-react';
 import { InvoiceData, TaxRate, LineItem, InvoiceTotals, TaxSummary, TemplateId, UserProfile, SavedInvoice } from './types';
 import { InvoicePreview } from './components/InvoicePreview';
@@ -33,6 +33,7 @@ const TEMPLATES: {id: TemplateId, label: string}[] = [
 ];
 
 const UNIT_SUGGESTIONS = ['式', '個', '月', 'h', '日', '件'];
+const DOCUMENT_TITLES = ['御請求書', '御見積書', '納品書', '領収書', 'INVOICE', 'QUOTATION'];
 
 const App: React.FC = () => {
   const [user, setUser] = useState<UserProfile | null>(getCurrentUser());
@@ -49,24 +50,32 @@ const App: React.FC = () => {
   
   const [invoiceData, setInvoiceData] = useState<InvoiceData>(() => {
     const saved = loadDraft();
-    return saved || {
+    // Default data with empty fields for better UX (placeholders will be shown)
+    const defaultData: InvoiceData = {
+      title: '御請求書',
       invoiceNumber: `INV-${new Date().getFullYear()}${String(new Date().getMonth()+1).padStart(2, '0')}-001`,
       date: new Date().toISOString().split('T')[0],
       dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       issuer: {
-        name: "サンプル株式会社",
-        registrationNumber: "T1234567890123",
-        address: "東京都港区芝公園4丁目2-8",
-        zipCode: "105-0011",
-        phone: "03-0000-0000",
-        email: "info@example.com",
-        bankInfo: "サンプル銀行 サンプル支店\n普通 1234567\nサンプル（カ",
+        name: "",
+        registrationNumber: "",
+        address: "",
+        zipCode: "",
+        phone: "",
+        email: "",
+        bankInfo: "",
         enableStamp: true
       },
-      client: { name: "クライアント株式会社 御中", address: "東京都千代田区丸の内1-1-1", zipCode: "100-0005" },
-      items: [{ id: '1', description: 'Web制作・コンサルティング', quantity: 1, unitPrice: 200000, unit: '式', taxRate: TaxRate.STANDARD }],
-      notes: "振込手数料は貴社にてご負担願います。"
+      client: { name: "", address: "", zipCode: "" },
+      items: [{ id: '1', description: '', quantity: 1, unitPrice: 0, unit: '式', taxRate: TaxRate.STANDARD }],
+      notes: ""
     };
+    
+    // Merge saved data with default data to ensure all properties (like title) exist
+    if (saved) {
+      return { ...defaultData, ...saved };
+    }
+    return defaultData;
   });
 
   const [template, setTemplate] = useState<TemplateId>('modern');
@@ -179,7 +188,7 @@ const App: React.FC = () => {
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`請求書_${invoiceData.invoiceNumber}.pdf`);
+      pdf.save(`${invoiceData.title}_${invoiceData.invoiceNumber}.pdf`);
       
       if (user) {
         const saved: SavedInvoice = { ...invoiceData, id: crypto.randomUUID(), createdAt: Date.now(), templateId: template };
@@ -253,6 +262,23 @@ const App: React.FC = () => {
                     <RefreshCw size={10} /> 全単価を税込へ変換
                   </button>
                 </div>
+                
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                  <label className="text-[9px] font-black text-slate-400 mb-1 block uppercase tracking-tighter">書類種別</label>
+                  <div className="relative">
+                    <FileType className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                    <select 
+                      className="w-full pl-9 pr-4 py-2 text-sm font-black border-slate-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 bg-slate-50"
+                      value={invoiceData.title}
+                      onChange={e => setInvoiceData(d => ({ ...d, title: e.target.value }))}
+                    >
+                      {DOCUMENT_TITLES.map(title => (
+                        <option key={title} value={title}>{title}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
                   <label className="text-[9px] font-black text-slate-400 mb-1 block uppercase tracking-tighter">請求番号</label>
                   <input className="w-full text-sm font-bold border-none focus:ring-0 p-0 bg-white" value={invoiceData.invoiceNumber} onChange={e => setInvoiceData(d => ({ ...d, invoiceNumber: e.target.value }))} placeholder="INV-2024-001" />
@@ -282,7 +308,7 @@ const App: React.FC = () => {
                     </div>
                     <div className="mb-4">
                       <label className="text-[9px] font-black text-slate-300 uppercase block mb-1">内容 #{idx+1}</label>
-                      <input className="w-full text-sm font-black text-slate-700 border-none p-0 focus:ring-0 bg-white" value={item.description} onChange={e => setInvoiceData(d => ({ ...d, items: d.items.map(i => i.id === item.id ? { ...i, description: e.target.value } : i) }))} placeholder="内容を入力" />
+                      <input className="w-full text-sm font-black text-slate-700 border-none p-0 focus:ring-0 bg-white" value={item.description} onChange={e => setInvoiceData(d => ({ ...d, items: d.items.map(i => i.id === item.id ? { ...i, description: e.target.value } : i) }))} placeholder="Web制作・コンサルティング費" />
                     </div>
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       <div className="bg-slate-50 p-3 rounded-2xl">
@@ -337,13 +363,13 @@ const App: React.FC = () => {
                 <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
                   <label className="text-[10px] font-black text-slate-400 mb-2 block uppercase tracking-widest">郵便番号</label>
                   <div className="flex gap-4">
-                    <input className="flex-1 text-sm font-black border-none p-0 bg-white focus:ring-0" placeholder="1000001" value={invoiceData.client.zipCode} onChange={e => setInvoiceData(d => ({ ...d, client: { ...d.client, zipCode: e.target.value } }))} />
+                    <input className="flex-1 text-sm font-black border-none p-0 bg-white focus:ring-0" placeholder="100-0005" value={invoiceData.client.zipCode} onChange={e => setInvoiceData(d => ({ ...d, client: { ...d.client, zipCode: e.target.value } }))} />
                     <button onClick={() => handleZipLookup('client')} className="bg-indigo-600 text-white px-5 py-2.5 rounded-2xl shadow-lg font-black text-[10px]">検索</button>
                   </div>
                 </div>
                 <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
                   <label className="text-[10px] font-black text-slate-400 mb-2 block uppercase tracking-widest">住所</label>
-                  <textarea className="w-full text-sm font-bold border-none h-24 resize-none p-0 bg-white focus:ring-0" placeholder="住所を入力してください" value={invoiceData.client.address} onChange={e => setInvoiceData(d => ({ ...d, client: { ...d.client, address: e.target.value } }))} />
+                  <textarea className="w-full text-sm font-bold border-none h-24 resize-none p-0 bg-white focus:ring-0" placeholder="東京都千代田区丸の内1-1-1" value={invoiceData.client.address} onChange={e => setInvoiceData(d => ({ ...d, client: { ...d.client, address: e.target.value } }))} />
                 </div>
               </div>
             </div>
@@ -358,18 +384,18 @@ const App: React.FC = () => {
                 </div>
                 <div className="bg-slate-50 p-4 rounded-2xl shadow-inner">
                   <label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">社名 / 氏名</label>
-                  <input className="w-full bg-transparent border-none p-0 font-black text-slate-800 text-base focus:ring-0" value={invoiceData.issuer.name} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, name: e.target.value } }))} />
+                  <input className="w-full bg-transparent border-none p-0 font-black text-slate-800 text-base focus:ring-0" placeholder="株式会社サンプル" value={invoiceData.issuer.name} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, name: e.target.value } }))} />
                 </div>
                 <div className={`p-4 rounded-2xl border-2 shadow-inner ${isRegNumValid(invoiceData.issuer.registrationNumber) ? 'bg-green-50 border-green-100' : 'bg-red-50 border-red-100'}`}>
                   <label className={`text-[9px] font-black uppercase mb-1 block ${isRegNumValid(invoiceData.issuer.registrationNumber) ? 'text-green-600' : 'text-red-600'}`}>登録番号 (T+13桁)</label>
                   <input className="w-full bg-transparent border-none p-0 font-mono text-slate-800 font-black focus:ring-0" placeholder="T1234567890123" value={invoiceData.issuer.registrationNumber} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, registrationNumber: e.target.value } }))} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-slate-50 p-4 rounded-2xl shadow-inner"><label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">郵便番号</label><input className="w-full bg-transparent border-none p-0 font-bold text-xs focus:ring-0" value={invoiceData.issuer.zipCode} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, zipCode: e.target.value } }))} /></div>
-                  <div className="bg-slate-50 p-4 rounded-2xl shadow-inner"><label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">電話番号</label><input className="w-full bg-transparent border-none p-0 font-bold text-xs focus:ring-0" value={invoiceData.issuer.phone} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, phone: e.target.value } }))} /></div>
+                  <div className="bg-slate-50 p-4 rounded-2xl shadow-inner"><label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">郵便番号</label><input className="w-full bg-transparent border-none p-0 font-bold text-xs focus:ring-0" placeholder="105-0011" value={invoiceData.issuer.zipCode} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, zipCode: e.target.value } }))} /></div>
+                  <div className="bg-slate-50 p-4 rounded-2xl shadow-inner"><label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">電話番号</label><input className="w-full bg-transparent border-none p-0 font-bold text-xs focus:ring-0" placeholder="03-0000-0000" value={invoiceData.issuer.phone} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, phone: e.target.value } }))} /></div>
                 </div>
-                <div className="bg-slate-50 p-4 rounded-2xl shadow-inner"><label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">住所</label><textarea className="w-full bg-transparent border-none p-0 h-16 text-xs font-bold resize-none focus:ring-0" value={invoiceData.issuer.address} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, address: e.target.value } }))} /></div>
-                <div className="bg-slate-50 p-4 rounded-2xl shadow-inner"><label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">振込先</label><textarea className="w-full bg-transparent border-none p-0 h-24 text-[10px] font-black resize-none focus:ring-0 leading-relaxed" value={invoiceData.issuer.bankInfo} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, bankInfo: e.target.value } }))} /></div>
+                <div className="bg-slate-50 p-4 rounded-2xl shadow-inner"><label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">住所</label><textarea className="w-full bg-transparent border-none p-0 h-16 text-xs font-bold resize-none focus:ring-0" placeholder="東京都港区芝公園4丁目2-8" value={invoiceData.issuer.address} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, address: e.target.value } }))} /></div>
+                <div className="bg-slate-50 p-4 rounded-2xl shadow-inner"><label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">振込先</label><textarea className="w-full bg-transparent border-none p-0 h-24 text-[10px] font-black resize-none focus:ring-0 leading-relaxed" placeholder="◯◯銀行 ◯◯支店&#10;普通 1234567&#10;カブシキガイシャサンプル" value={invoiceData.issuer.bankInfo} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, bankInfo: e.target.value } }))} /></div>
 
                 <div className="pt-6 border-t border-slate-100">
                   <div className="flex items-center justify-between mb-4 px-2">
@@ -387,7 +413,7 @@ const App: React.FC = () => {
                        </label>
                        {invoiceData.issuer.stampImageUrl && (
                          <div className="relative w-20 h-20 bg-white rounded-2xl border-2 border-indigo-100 flex items-center justify-center p-3">
-                           <img src={invoiceData.issuer.stampImageUrl} className="max-w-full max-h-full object-contain mix-blend-multiply" />
+                           <img src={invoiceData.issuer.stampImageUrl} className="max-w-full max-h-full object-contain" />
                            <button onClick={() => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, stampImageUrl: undefined } }))} className="absolute -top-3 -right-3 bg-red-500 text-white rounded-full p-1.5 shadow-xl hover:scale-110 transition-all"><X size={12} strokeWidth={4}/></button>
                          </div>
                        )}
