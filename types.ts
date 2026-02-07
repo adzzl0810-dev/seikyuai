@@ -33,6 +33,7 @@ export interface Client {
 }
 
 export interface InvoiceData {
+  title: string; // "御請求書", "御見積書", etc.
   invoiceNumber: string;
   date: string;
   dueDate: string;
