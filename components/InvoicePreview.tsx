@@ -23,7 +23,7 @@ const StampComponent: React.FC<{ text: string; imageUrl?: string; color?: string
   if (imageUrl) {
     return (
       <div className="absolute top-[-25px] right-[-10px] opacity-90 pointer-events-none select-none mix-blend-multiply z-20">
-        <img src={imageUrl} alt="印影" className="w-[65px] h-[65px] object-contain rotate-[-5deg]" />
+        <img src={imageUrl} alt="印影" className="w-[65px] h-[65px] object-contain" />
       </div>
     );
   }
@@ -71,7 +71,7 @@ const Table: React.FC<{
           {items.map((item) => (
             <tr key={item.id} className="border-b border-slate-100">
               <td className={`p-3 ${bordered ? 'border border-slate-300' : ''}`}>
-                {item.description}
+                {item.description || <span className="text-slate-200">（内容を入力）</span>}
                 {item.taxRate === TaxRate.REDUCED && <span className="ml-2 text-[8px] font-bold text-white bg-indigo-500 px-1.5 py-0.5 rounded-sm">軽減8%</span>}
               </td>
               <td className={`p-3 text-center ${bordered ? 'border border-slate-300' : ''}`}>{item.quantity}</td>
@@ -112,7 +112,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
         <div className="w-full sm:w-auto">
           {/* SEO Optimized: Changed h1 to h2, keeping h1 for site title only */}
           <h2 className="text-4xl font-black tracking-[0.2em] mb-4 uppercase leading-tight" style={{ color: templateId === 'monochrome' ? '#000' : accentColor }}>
-            {templateId === 'simple' ? 'Invoice' : '御請求書'}
+            {data.title || '御請求書'}
           </h2>
           <div className="space-y-1 text-sm">
             <p className="font-bold">No. <span className="text-slate-500">{data.invoiceNumber}</span></p>
@@ -122,21 +122,21 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
         </div>
         <div className="text-left sm:text-right relative pt-2 w-full sm:w-auto">
            {data.issuer.enableStamp && <StampComponent text={data.issuer.name} imageUrl={data.issuer.stampImageUrl} />}
-           <h3 className="text-2xl font-black mb-2 tracking-tight">{data.issuer.name}</h3>
+           <h3 className="text-2xl font-black mb-2 tracking-tight">{data.issuer.name || <span className="text-slate-200">自社名（サンプル）</span>}</h3>
            <div className="text-[11px] leading-relaxed text-slate-500">
-             <p className="font-bold mb-1" style={{ color: accentColor }}>登録番号: {data.issuer.registrationNumber}</p>
-             <p>〒{data.issuer.zipCode} {data.issuer.address}</p>
-             <p>{data.issuer.phone && `TEL: ${data.issuer.phone}`} {data.issuer.email && ` / ${data.issuer.email}`}</p>
+             <p className="font-bold mb-1" style={{ color: accentColor }}>登録番号: {data.issuer.registrationNumber || 'T0000000000000'}</p>
+             <p>〒{data.issuer.zipCode || '000-0000'} {data.issuer.address || '自社住所（サンプル）'}</p>
+             <p>{(data.issuer.phone || data.issuer.email) ? `${data.issuer.phone} / ${data.issuer.email}` : 'TEL: 03-0000-0000 / info@example.com'}</p>
            </div>
         </div>
       </div>
 
       {/* Recipient Area */}
       <div className="mb-12 border-l-4 pl-6" style={{ borderColor: accentColor }}>
-        <h2 className="text-2xl font-black border-b border-slate-100 pb-2 mb-3 tracking-tight">{data.client.name}</h2>
+        <h2 className="text-2xl font-black border-b border-slate-100 pb-2 mb-3 tracking-tight">{data.client.name || <span className="text-slate-300">クライアント名（サンプル）</span>}</h2>
         <div className="text-sm text-slate-500">
-          <p>〒{data.client.zipCode}</p>
-          <p>{data.client.address}</p>
+          <p>〒{data.client.zipCode || '000-0000'}</p>
+          <p>{data.client.address || 'クライアント住所（サンプル）'}</p>
         </div>
       </div>
 
@@ -182,11 +182,11 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-6 sm:gap-8 mb-12">
         <div className="sm:col-span-2 p-5 bg-slate-50 rounded-2xl">
           <p className="text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">お振込先</p>
-          <p className="text-[11px] font-bold text-slate-600 leading-relaxed whitespace-pre-wrap">{data.issuer.bankInfo}</p>
+          <p className="text-[11px] font-bold text-slate-600 leading-relaxed whitespace-pre-wrap">{data.issuer.bankInfo || '振込先銀行情報（サンプル）'}</p>
         </div>
         <div className="sm:col-span-3 p-5 border border-slate-100 rounded-2xl">
           <p className="text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">備考</p>
-          <p className="text-[11px] text-slate-500 leading-relaxed whitespace-pre-wrap">{data.notes || '特記事項なし'}</p>
+          <p className="text-[11px] text-slate-500 leading-relaxed whitespace-pre-wrap">{data.notes || '備考・特記事項（サンプル）'}</p>
         </div>
       </div>
 
