@@ -3,7 +3,7 @@ import {
   Plus, Trash2, Download, FileText, Building, User, Settings, 
   Stamp, Search, Check, AlertCircle, Save, History as HistoryIcon, X, 
   ChevronRight, ShieldCheck, Zap, LayoutTemplate, MapPin, Upload, LogIn, LogOut,
-  Palette, MousePointer2, Info, BookOpen, ShieldAlert, Eye, Edit3, Copy, RefreshCw,
+  Palette, MousePointer2, Info, BookOpen, ShieldAlert, Eye, Edit3, Copy,
   ExternalLink, Scale, Loader2, Mail, CheckCircle2, ArrowRight, FileType
 } from 'lucide-react';
 import { InvoiceData, TaxRate, LineItem, InvoiceTotals, TaxSummary, TemplateId, UserProfile, SavedInvoice } from './types';
@@ -134,16 +134,6 @@ const App: React.FC = () => {
     }
   };
 
-  const convertPricesToInclusive = () => {
-    setInvoiceData(d => ({
-      ...d,
-      items: d.items.map(i => ({
-        ...i,
-        unitPrice: Math.round(i.unitPrice * (1 + i.taxRate))
-      }))
-    }));
-  };
-
   const downloadPdf = async () => {
     if (!previewRef.current || isGeneratingPdf) return;
     setIsGeneratingPdf(true);
@@ -258,9 +248,6 @@ const App: React.FC = () => {
               <div className="p-6 bg-slate-50 border border-slate-100 rounded-[2rem] space-y-4 shadow-sm">
                 <div className="flex items-center justify-between mb-2">
                   <div className="text-slate-800 font-black text-xs uppercase tracking-widest flex items-center gap-2"><Info size={14} className="text-indigo-600"/> 請求基本情報</div>
-                  <button onClick={convertPricesToInclusive} className="text-[9px] font-black text-indigo-600 bg-white border border-indigo-100 px-3 py-1.5 rounded-full hover:bg-indigo-50 transition-all flex items-center gap-1">
-                    <RefreshCw size={10} /> 全単価を税込へ変換
-                  </button>
                 </div>
                 
                 <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
