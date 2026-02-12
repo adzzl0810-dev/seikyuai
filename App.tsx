@@ -147,18 +147,21 @@ const App: React.FC = () => {
 
     try {
       // Determine device to adjust scale
-      // Optimize scale for size/quality balance (Scale 2 is approx 200dpi)
-      const scale = 2;
+      // Optimize scale for size/quality balance (1.5 is approx 144dpi, good for print and performance)
+      const scale = 1.5;
 
       const A4_WIDTH_PX = 794;
       const A4_HEIGHT_PX = 1123;
 
       const canvas = await html2canvas(previewRef.current, {
         scale: scale,
-        useCORS: true,
+        useCORS: true, // Keep CORS for external images, checking failure
         backgroundColor: '#ffffff',
-        // Force desktop viewport for consistent layout (Increase height to avoid clipping)
+        // Force desktop viewport for consistent layout (Increase height appropriately)
         windowWidth: 1280,
+        // windowHeight: 3000, // Reduced or dynamic might be better, but fixed large is safer for clipping.
+        // Let's use a reasonable max height. 3000 is fine for desktop, but maybe too much for some.
+        // We will keep windowHeight but rely on lower scale to save memory.
         windowHeight: 3000,
         // Enable logging for debug
         logging: false,
@@ -181,8 +184,10 @@ const App: React.FC = () => {
         }
       });
 
-      // Use JPEG with 0.95 quality for better text clarity while keeping size small
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      // Use JPEG with 0.90 quality to further reduce size
+      const imgData = canvas.toDataURL('image/jpeg', 0.90);
+
+      // ... (rest of PDF logic is same)
 
       // Initialize jsPDF with compression
       const pdf = new jsPDF({
@@ -202,14 +207,21 @@ const App: React.FC = () => {
       const finalWidth = pdfPageWidth;
       const finalHeight = imgProps.height * ratio;
 
-      // Top align
-      const y = 0;
+      let heightLeft = finalHeight;
+      let position = 0;
 
-      // Check if height exceeds page and we need to handle it?
-      // For now, we assume single page A4. If content is slightly larger, it might clip bottom,
-      // but usually 'min-height: 297mm' ensures it matches A4 ratio if content is short.
+      // Add first page
+      pdf.addImage(imgData, 'JPEG', 0, position, finalWidth, finalHeight);
+      heightLeft -= pdfPageHeight;
 
-      pdf.addImage(imgData, 'JPEG', 0, y, finalWidth, finalHeight);
+      // Add subsequent pages if needed
+      while (heightLeft > 0) {
+        position -= pdfPageHeight; // Move the image up to show the next section
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, finalWidth, finalHeight);
+        heightLeft -= pdfPageHeight;
+      }
+
       pdf.save(`${invoiceData.title}_${invoiceData.invoiceNumber}.pdf`);
 
       if (user) {
@@ -218,9 +230,10 @@ const App: React.FC = () => {
         setHistory(getInvoiceHistory(user.email));
       }
       alert("PDFをダウンロードしました！✨\n※いかなる損害についても当サービスは責任を負いません。");
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("PDF作成に失敗しました。スマホの場合はメモリ不足の可能性があります。");
+      // Show more detailed error
+      alert(`PDF作成に失敗しました。\nエラー内容: ${e.message || e}\nメモリ不足や画像読込エラーの可能性があります。`);
     }
     finally {
       setIsGeneratingPdf(false);
