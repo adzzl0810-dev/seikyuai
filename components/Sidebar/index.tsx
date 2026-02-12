@@ -1,7 +1,6 @@
-import React from 'react';
 import {
     History as HistoryIcon, LogOut, FileText, Info,
-    Building, Palette, BookOpen
+    Building, Palette, BookOpen, Copy
 } from 'lucide-react';
 import { UserProfile } from '../../types';
 
@@ -12,6 +11,7 @@ interface SidebarProps {
     onLoginClick: () => void;
     onLogoutClick: () => void;
     onHistoryClick: () => void;
+    onConvertClick: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -20,7 +20,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     setActiveTab,
     onLoginClick,
     onLogoutClick,
-    onHistoryClick
+    onHistoryClick,
+    onConvertClick
 }) => {
     return (
         <>
@@ -33,6 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
+                    <button onClick={onConvertClick} className="p-2.5 hover:bg-slate-50 rounded-xl text-slate-500 transition-all border border-slate-100 shadow-sm active:scale-95" title="書類を変換・複製"><Copy size={20} /></button>
                     {user ? (
                         <div className="flex items-center gap-2">
                             <button onClick={onHistoryClick} className="p-2.5 hover:bg-slate-50 rounded-xl text-slate-500 transition-all border border-slate-100"><HistoryIcon size={20} /></button>

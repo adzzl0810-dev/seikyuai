@@ -1,47 +1,54 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
-    
-    <!-- 基本SEO設定 -->
-    <title>Seikyu AI | 無料・登録不要のインボイス対応請求書作成サービス</title>
-    <meta name="description" content="日本のインボイス制度（適格請求書）に完全準拠。直感的なUIでプロ仕様の請求書を数秒で作成・PDF出力。会員登録不要・完全無料で利用可能。スマホ・PC対応。">
-    <meta name="keywords" content="請求書作成, インボイス制度, 無料, PDF出力, 登録不要, 適格請求書, 電子印鑑, テンプレート">
-    <meta name="theme-color" content="#4f46e5">
 
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://seikyuai.vercel.app/" />
-    
-    <!-- Icons (SEO & UI Enhancement) -->
-    <link rel="icon" href="/favicon.ico" sizes="any">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
 
-    <!-- Google Search Console -->
-    <meta name="google-site-verification" content="googlec288f4e6deaa5114" />
+  <!-- 基本SEO設定 -->
+  <title>Seikyu AI | 無料・登録不要のインボイス対応請求書作成サービス</title>
+  <meta name="description" content="日本のインボイス制度（適格請求書）に完全準拠。直感的なUIでプロ仕様の請求書を数秒で作成・PDF出力。会員登録不要・完全無料で利用可能。スマホ・PC対応。">
+  <meta name="keywords" content="請求書作成, インボイス制度, 無料, PDF出力, 登録不要, 適格請求書, 電子印鑑, テンプレート">
+  <meta name="theme-color" content="#4f46e5">
 
-    <!-- OGP (SNSシェア設定) -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Seikyu AI | インボイス対応・スマート請求書作成" />
-    <meta property="og:description" content="登録不要・完全無料。インボイス制度に対応した美しい請求書をブラウザで瞬時に作成・PDFダウンロード。電子印影も自動生成。" />
-    <meta property="og:url" content="https://seikyuai.vercel.app/" />
-    <meta property="og:site_name" content="Seikyu AI" />
-    <meta property="og:image" content="https://seikyuai.vercel.app/og-image.png" />
-    <meta property="og:locale" content="ja_JP" />
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://seikyuai.vercel.app/" />
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Seikyu AI | 秒速・請求書作成ツール" />
-    <meta name="twitter:description" content="インボイス対応の請求書を今すぐ作成。登録不要・無料。" />
-    <meta name="twitter:image" content="https://seikyuai.vercel.app/og-image.png" />
+  <!-- Icons (SEO & UI Enhancement) -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-    <!-- Google AdSense -->
-    <meta name="google-adsense-account" content="ca-pub-3080048643511723">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3080048643511723" crossorigin="anonymous"></script>
+  <!-- Google Search Console -->
+  <meta name="google-site-verification" content="googlec288f4e6deaa5114" />
 
-    <!-- 構造化データ (SoftwareApplication) -->
-    <script type="application/ld+json">
+  <!-- PWA Settings for iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Seikyu AI">
+
+  <!-- OGP (SNSシェア設定) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Seikyu AI | インボイス対応・スマート請求書作成" />
+  <meta property="og:description" content="登録不要・完全無料。インボイス制度に対応した美しい請求書をブラウザで瞬時に作成・PDFダウンロード。電子印影も自動生成。" />
+  <meta property="og:url" content="https://seikyuai.vercel.app/" />
+  <meta property="og:site_name" content="Seikyu AI" />
+  <meta property="og:image" content="https://seikyuai.vercel.app/og-image.png" />
+  <meta property="og:locale" content="ja_JP" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Seikyu AI | 秒速・請求書作成ツール" />
+  <meta name="twitter:description" content="インボイス対応の請求書を今すぐ作成。登録不要・無料。" />
+  <meta name="twitter:image" content="https://seikyuai.vercel.app/og-image.png" />
+
+  <!-- Google AdSense -->
+  <meta name="google-adsense-account" content="ca-pub-3080048643511723">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3080048643511723"
+    crossorigin="anonymous"></script>
+
+  <!-- 構造化データ (SoftwareApplication) -->
+  <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
@@ -58,26 +65,48 @@
       "countryOfOrigin": "JP"
     }
     </script>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-    <style>
-      :root { scroll-behavior: smooth; }
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+
       body {
-        font-family: 'Noto Sans JP', sans-serif;
-        background-color: #f1f5f9;
-        color: #0f172a;
+        background-color: white !important;
       }
-      @media print {
-        .no-print { display: none !important; }
-        body { background-color: white !important; }
-      }
-      ::-webkit-scrollbar { width: 6px; }
-      ::-webkit-scrollbar-track { background: transparent; }
-      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-      ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    </style>
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
   <script type="importmap">
 {
   "imports": {
@@ -93,17 +122,19 @@
 }
 </script>
 </head>
-  <body>
-    <div id="root">
-      <!-- Static content for SEO and Loading state -->
-      <div class="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800 p-4 font-sans">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-6"></div>
-        <h1 class="text-2xl font-bold mb-3 tracking-tight text-slate-900">Seikyu AI | 無料・登録不要のインボイス対応請求書作成</h1>
-        <p class="text-sm text-slate-500 max-w-md text-center leading-relaxed">
-          日本のインボイス制度（適格請求書）に完全準拠したプロ仕様の請求書を、ブラウザから登録不要で今すぐ作成・PDF出力できます。<br/>読み込み中...
-        </p>
-      </div>
+
+<body>
+  <div id="root">
+    <!-- Static content for SEO and Loading state -->
+    <div class="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-800 p-4 font-sans">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-6"></div>
+      <h1 class="text-2xl font-bold mb-3 tracking-tight text-slate-900">Seikyu AI | 無料・登録不要のインボイス対応請求書作成</h1>
+      <p class="text-sm text-slate-500 max-w-md text-center leading-relaxed">
+        日本のインボイス制度（適格請求書）に完全準拠したプロ仕様の請求書を、ブラウザから登録不要で今すぐ作成・PDF出力できます。<br />読み込み中...
+      </p>
     </div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+  </div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
 </html>

@@ -26,6 +26,7 @@ import { TermsModal } from './components/TermsModal';
 import { GuideModal } from './components/GuideModal';
 import { PrivacyPolicyModal } from './components/PrivacyPolicyModal';
 import { ContactModal } from './components/ContactModal';
+import { ConversionModal } from './components/ConversionModal';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -49,6 +50,7 @@ const App: React.FC = () => {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
+  const [isConversionOpen, setIsConversionOpen] = useState(false); // New State
   const [history, setHistory] = useState<SavedInvoice[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [themeColor, setThemeColor] = useState('#4f46e5');
@@ -139,6 +141,36 @@ const App: React.FC = () => {
       reader.onloadend = () => setInvoiceData(prev => ({ ...prev, issuer: { ...prev.issuer, stampImageUrl: reader.result as string } }));
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleConvert = (targetTitle: string) => {
+    setInvoiceData(prev => {
+      // Generate new number
+      const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      const newNumber = `INV-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${randomSuffix}`;
+
+      const newData = {
+        ...prev,
+        title: targetTitle,
+        invoiceNumber: newNumber,
+        date: new Date().toISOString().split('T')[0],
+        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      };
+
+      // If converting to Quote, maybe change number prefix? Kept simple for now.
+      if (targetTitle.includes('見積')) {
+        newData.invoiceNumber = newData.invoiceNumber.replace('INV', 'EST');
+      } else if (targetTitle.includes('納品')) {
+        newData.invoiceNumber = newData.invoiceNumber.replace('INV', 'DEL');
+      } else if (targetTitle.includes('領収')) {
+        newData.invoiceNumber = newData.invoiceNumber.replace('INV', 'RCT');
+      } else if (targetTitle.includes('検収')) {
+        newData.invoiceNumber = newData.invoiceNumber.replace('INV', 'ACP');
+      }
+
+      return newData;
+    });
+    alert(`${targetTitle}として複製を作成しました！`);
   };
 
   const downloadPdf = async () => {
@@ -253,6 +285,7 @@ const App: React.FC = () => {
           onLoginClick={() => setIsAuthModalOpen(true)}
           onLogoutClick={() => { logoutUser(); setUser(null); }}
           onHistoryClick={() => setShowHistory(!showHistory)}
+          onConvertClick={() => setIsConversionOpen(true)}
         />
 
         <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-8 bg-white custom-scrollbar">
@@ -309,29 +342,31 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-6 bg-white border-t shrink-0">
-          <div className="flex justify-between items-center mb-4 px-1">
+        <div className="px-3 py-2 bg-white border-t shrink-0">
+          <div className="flex justify-between items-end mb-2 px-1">
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-300 uppercase leading-none">合計金額（税込）</span>
-              <span className="text-2xl font-black text-slate-800 tracking-tighter">{totals.grandTotal.toLocaleString()}<span className="text-xs ml-1 text-slate-400 font-bold">円</span></span>
+              <span className="text-[8px] font-black text-slate-300 uppercase leading-none mb-0.5">合計（税込）</span>
+              <span className="text-lg font-black text-slate-800 tracking-tighter leading-none">{totals.grandTotal.toLocaleString()}<span className="text-[9px] ml-0.5 text-slate-400 font-bold">円</span></span>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-green-200 shadow-lg"></div>
-              <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">Secured System</span>
+            <div className="flex items-center gap-1 mb-0.5">
+              <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+              <span className="text-[8px] font-black text-slate-300 tracking-widest uppercase scale-90 origin-right">Secured</span>
             </div>
           </div>
 
-          {/* Enhanced Legal Footer */}
-          <div className="pt-4 border-t border-slate-50 space-y-3">
-            <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center">
-              <button onClick={() => setIsPrivacyOpen(true)} className="text-[9px] font-black text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1.5 uppercase tracking-tighter">Privacy Policy</button>
-              <button onClick={() => setIsTermsOpen(true)} className="text-[9px] font-black text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1.5 uppercase tracking-tighter">Terms of Service</button>
-              <button onClick={() => setIsContactOpen(true)} className="text-[9px] font-black text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1.5 uppercase tracking-tighter">お問い合わせ <Mail size={8} /></button>
+          <div className="pt-2 border-t border-slate-50 flex flex-col gap-1.5 items-center">
+            <div className="flex gap-2 opacity-50 hover:opacity-100 transition-opacity">
+              {/* Minimal Links */}
+              <button onClick={() => setIsPrivacyOpen(true)} className="text-[8px] font-bold text-slate-400 hover:text-indigo-600 transition-colors">Privacy</button>
+              <span className="text-[8px] text-slate-200">•</span>
+              <button onClick={() => setIsTermsOpen(true)} className="text-[8px] font-bold text-slate-400 hover:text-indigo-600 transition-colors">Terms</button>
+              <span className="text-[8px] text-slate-200">•</span>
+              <button onClick={() => setIsContactOpen(true)} className="text-[8px] font-bold text-slate-400 hover:text-indigo-600 transition-colors">Contact</button>
             </div>
-            <div className="flex justify-center">
-              <button onClick={() => setIsGuideOpen(true)} className="text-[10px] font-black text-indigo-600 bg-indigo-50 px-4 py-2 rounded-full transition-all hover:bg-indigo-100 flex items-center gap-1.5 shadow-sm active:scale-95"><BookOpen size={12} /> 使い方ガイド</button>
+            <div className="flex items-center gap-2 justify-center w-full">
+              <button onClick={() => setIsGuideOpen(true)} className="text-[8px] font-black text-indigo-500 bg-indigo-50/50 hover:bg-indigo-50 px-2 py-1 rounded w-full transition-all text-center">使い方ガイド</button>
             </div>
-            <p className="text-[8px] font-bold text-slate-300 text-center uppercase tracking-widest">© 2024 Seikyu AI. All rights reserved.</p>
+            <p className="text-[7px] font-bold text-slate-200 text-center uppercase tracking-widest scale-75 origin-bottom">© 2024 Seikyu AI.</p>
           </div>
         </div>
       </aside>
@@ -442,7 +477,14 @@ const App: React.FC = () => {
       <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
       <PrivacyPolicyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
       <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
+      <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
       <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
+      <ConversionModal
+        isOpen={isConversionOpen}
+        onClose={() => setIsConversionOpen(false)}
+        onConvert={handleConvert}
+        currentTitle={invoiceData.title}
+      />
 
       <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }

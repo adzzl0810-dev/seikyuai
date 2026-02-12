@@ -58,6 +58,79 @@ const ItemsTab: React.FC<ItemsTabProps> = ({
                 </div>
             </div>
 
+            <div className="bg-slate-900 p-5 rounded-3xl shadow-xl text-white relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500 rounded-full blur-[60px] opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                <div className="relative z-10 flex flex-col gap-3">
+                    <div className="flex items-center gap-2 text-indigo-300 font-black text-[10px] uppercase tracking-widest">
+                        <Plus size={14} /> スマート明細入力 (Beta)
+                    </div>
+                    <div className="flex gap-2">
+                        <input
+                            className="flex-1 bg-slate-800 border-none rounded-xl px-4 py-3 text-sm font-bold placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 transition-all text-white"
+                            placeholder="例: サイト制作費 150000 1"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    const val = e.currentTarget.value.trim();
+                                    if (!val) return;
+
+                                    // Parse logic: Name Price [Qty] [Unit]
+                                    // Regex to find the last numbers
+                                    const parts = val.split(/\s+/);
+                                    let price = 0;
+                                    let qty = 1;
+                                    let name = val;
+                                    let unit = '式';
+
+                                    // Try to find numbers from the end
+                                    if (parts.length >= 2) {
+                                        const last = parts[parts.length - 1];
+                                        const secondLast = parts[parts.length - 2];
+
+                                        if (!isNaN(Number(last))) {
+                                            // Case: Name Price
+                                            if (parts.length === 2) {
+                                                price = Number(last);
+                                                name = parts[0];
+                                            }
+                                            // Case: Name Price Qty
+                                            else if (!isNaN(Number(secondLast))) {
+                                                qty = Number(last);
+                                                price = Number(secondLast);
+                                                name = parts.slice(0, parts.length - 2).join(' ');
+                                            }
+                                            // Case: Name Price (Qty=1)
+                                            else {
+                                                price = Number(last);
+                                                name = parts.slice(0, parts.length - 1).join(' ');
+                                            }
+                                        }
+                                    }
+
+                                    if (price > 0) {
+                                        setInvoiceData(d => ({
+                                            ...d,
+                                            items: [...d.items, {
+                                                id: Math.random().toString(),
+                                                description: name,
+                                                quantity: qty,
+                                                unitPrice: price,
+                                                unit: unit,
+                                                taxRate: TaxRate.STANDARD
+                                            }]
+                                        }));
+                                        e.currentTarget.value = '';
+                                        // Optional: toast success
+                                    }
+                                }
+                            }}
+                        />
+                    </div>
+                    <p className="text-[9px] text-slate-400 font-bold ml-1">
+                        使い方のヒント: <span className="text-slate-300">"品名 単価 [数量]"</span> を入力してEnter
+                    </p>
+                </div>
+            </div>
+
             <div className="space-y-4">
                 <div className="flex items-center justify-between px-2 text-xs font-black uppercase text-slate-800 tracking-widest">
                     <span>明細項目</span>
