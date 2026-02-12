@@ -196,20 +196,20 @@ const App: React.FC = () => {
       const pdfPageWidth = pdf.internal.pageSize.getWidth();
       const pdfPageHeight = pdf.internal.pageSize.getHeight();
 
-      // Calculate dimensions to fit within the page (Shrink to fit)
-      const widthRatio = pdfPageWidth / imgProps.width;
-      const heightRatio = pdfPageHeight / imgProps.height;
-      const ratio = Math.min(widthRatio, heightRatio);
+      // Fit to width (Priority: Fill viewport width)
+      const ratio = pdfPageWidth / imgProps.width;
 
-      const finalWidth = imgProps.width * ratio;
+      const finalWidth = pdfPageWidth;
       const finalHeight = imgProps.height * ratio;
 
-      // Center horizontally
-      const x = (pdfPageWidth - finalWidth) / 2;
       // Top align
       const y = 0;
 
-      pdf.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
+      // Check if height exceeds page and we need to handle it?
+      // For now, we assume single page A4. If content is slightly larger, it might clip bottom,
+      // but usually 'min-height: 297mm' ensures it matches A4 ratio if content is short.
+
+      pdf.addImage(imgData, 'JPEG', 0, y, finalWidth, finalHeight);
       pdf.save(`${invoiceData.title}_${invoiceData.invoiceNumber}.pdf`);
 
       if (user) {
