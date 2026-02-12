@@ -57,27 +57,27 @@ const Table: React.FC<{
 
   return (
     <div className="w-full overflow-x-auto">
-      <table className={`w-full border-collapse ${bordered ? 'border border-slate-300' : ''} text-[13px] min-w-[600px]`}>
+      <table className={`w-full border-collapse ${bordered ? 'border border-slate-300' : ''} text-xs min-w-[500px]`}>
         <thead>
           <tr className={`${getHeaderClass()} font-bold`} style={headerStyle === 'colored' ? { backgroundColor: accentColor } : {}}>
-            <th className={`p-3 text-left ${bordered ? 'border border-slate-300' : ''}`}>内容</th>
-            <th className={`p-3 text-center w-20 ${bordered ? 'border border-slate-300' : ''}`}>数量</th>
-            <th className={`p-3 text-center w-20 ${bordered ? 'border border-slate-300' : ''}`}>単位</th>
-            <th className={`p-3 text-right w-32 ${bordered ? 'border border-slate-300' : ''}`}>単価</th>
-            <th className={`p-3 text-right w-36 ${bordered ? 'border border-slate-300' : ''}`}>金額</th>
+            <th className={`p-2 text-left ${bordered ? 'border border-slate-300' : ''}`}>内容</th>
+            <th className={`p-2 text-center w-16 ${bordered ? 'border border-slate-300' : ''}`}>数量</th>
+            <th className={`p-2 text-center w-16 ${bordered ? 'border border-slate-300' : ''}`}>単位</th>
+            <th className={`p-2 text-right w-28 ${bordered ? 'border border-slate-300' : ''}`}>単価</th>
+            <th className={`p-2 text-right w-32 ${bordered ? 'border border-slate-300' : ''}`}>金額</th>
           </tr>
         </thead>
         <tbody>
           {items.map((item) => (
             <tr key={item.id} className="border-b border-slate-100">
-              <td className={`p-3 ${bordered ? 'border border-slate-300' : ''}`}>
+              <td className={`p-2 ${bordered ? 'border border-slate-300' : ''}`}>
                 {item.description || <span className="text-slate-200">（内容を入力）</span>}
                 {item.taxRate === TaxRate.REDUCED && <span className="ml-2 text-[8px] font-bold text-white bg-indigo-500 px-1.5 py-0.5 rounded-sm">軽減8%</span>}
               </td>
-              <td className={`p-3 text-center ${bordered ? 'border border-slate-300' : ''}`}>{item.quantity}</td>
-              <td className={`p-3 text-center ${bordered ? 'border border-slate-300' : ''}`}>{item.unit}</td>
-              <td className={`p-3 text-right ${bordered ? 'border border-slate-300' : ''}`}>{item.unitPrice.toLocaleString()}</td>
-              <td className={`p-3 text-right font-bold ${bordered ? 'border border-slate-300' : ''}`}>{(item.quantity * item.unitPrice).toLocaleString()}</td>
+              <td className={`p-2 text-center ${bordered ? 'border border-slate-300' : ''}`}>{item.quantity}</td>
+              <td className={`p-2 text-center ${bordered ? 'border border-slate-300' : ''}`}>{item.unit}</td>
+              <td className={`p-2 text-right ${bordered ? 'border border-slate-300' : ''}`}>{item.unitPrice.toLocaleString()}</td>
+              <td className={`p-2 text-right font-bold ${bordered ? 'border border-slate-300' : ''}`}>{(item.quantity * item.unitPrice).toLocaleString()}</td>
             </tr>
           ))}
           {Array.from({ length: Math.max(0, 8 - items.length) }).map((_, i) => (
@@ -99,7 +99,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
   return (
     <div
       ref={previewRef}
-      className={`print-area bg-white shadow-2xl box-border p-[15mm] md:p-[20mm] w-[210mm] min-h-[297mm] relative overflow-hidden transition-all duration-300 ${isSerif ? 'font-serif' : 'font-sans'}`}
+      className={`print-area bg-white shadow-2xl box-border p-[10mm] md:p-[15mm] w-[210mm] min-h-[297mm] relative overflow-hidden transition-all duration-300 ${isSerif ? 'font-serif' : 'font-sans'}`}
       style={{ borderTop: isNoPrintBorder ? 'none' : `12px solid ${accentColor}` }}
     >
       {/* Decorative corner */}
@@ -108,30 +108,30 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
       )}
 
       {/* Header Area */}
-      <div className={`flex flex-col sm:flex-row justify-between items-start mb-12 gap-6 ${templateId === 'grid' ? 'border-b-2 pb-6' : ''}`}>
+      <div className={`flex flex-col sm:flex-row justify-between items-start mb-8 gap-6 ${templateId === 'grid' ? 'border-b-2 pb-4' : ''}`}>
         <div className="w-full sm:w-auto">
           {/* SEO Optimized: Changed h1 to h2, keeping h1 for site title only */}
-          <h2 className="text-4xl font-black tracking-[0.2em] mb-4 uppercase leading-tight" style={{ color: templateId === 'monochrome' ? '#000' : accentColor }}>
+          <h2 className="text-3xl font-black tracking-[0.2em] mb-2 uppercase leading-tight" style={{ color: templateId === 'monochrome' ? '#000' : accentColor }}>
             {data.title || '御請求書'}
           </h2>
-          <div className="space-y-1 text-sm">
+          <div className="space-y-0.5 text-xs">
             <p className="font-bold">No. <span className="text-slate-500">{data.invoiceNumber}</span></p>
             <p className="text-slate-500">発行日: {formatDate(data.date)}</p>
             <p className="text-slate-500">支払期限: {formatDate(data.dueDate)}</p>
           </div>
         </div>
         <div className="text-left sm:text-right relative pt-2 w-full sm:w-auto flex flex-col sm:items-end">
-          <h3 className="text-2xl font-black mb-2 tracking-tight">{data.issuer.name || <span className="text-slate-200">自社名（サンプル）</span>}</h3>
-          <div className="text-[11px] leading-relaxed text-slate-500">
-            <p className="font-bold mb-1" style={{ color: accentColor }}>登録番号: {data.issuer.registrationNumber || 'T0000000000000'}</p>
+          <h3 className="text-xl font-black mb-1 tracking-tight">{data.issuer.name || <span className="text-slate-200">自社名（サンプル）</span>}</h3>
+          <div className="text-[10px] leading-relaxed text-slate-500">
+            <p className="font-bold mb-0.5" style={{ color: accentColor }}>登録番号: {data.issuer.registrationNumber || 'T0000000000000'}</p>
             <p>〒{data.issuer.zipCode || '000-0000'} {data.issuer.address || '自社住所（サンプル）'}</p>
             <p>{(data.issuer.phone || data.issuer.email) ? `${data.issuer.phone} / ${data.issuer.email}` : 'TEL: 03-0000-0000 / info@example.com'}</p>
           </div>
 
           {/* Logo & Stamp */}
-          <div className="flex gap-4 mt-4 justify-end items-start w-full">
+          <div className="flex gap-4 mt-2 justify-end items-start w-full">
             {data.issuer.logoImageUrl && (
-              <img src={data.issuer.logoImageUrl} alt="Logo" className="h-16 object-contain" />
+              <img src={data.issuer.logoImageUrl} alt="Logo" className="h-14 object-contain" />
             )}
             {data.issuer.enableStamp && <StampComponent text={data.issuer.name} imageUrl={data.issuer.stampImageUrl} />}
           </div>
@@ -139,22 +139,22 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
       </div>
 
       {/* Recipient Area */}
-      <div className="mb-12 border-l-4 pl-6" style={{ borderColor: accentColor }}>
-        <h2 className="text-2xl font-black border-b border-slate-100 pb-2 mb-3 tracking-tight">{data.client.name || <span className="text-slate-300">クライアント名（サンプル）</span>}</h2>
-        <div className="text-sm text-slate-500">
+      <div className="mb-8 border-l-4 pl-5" style={{ borderColor: accentColor }}>
+        <h2 className="text-xl font-black border-b border-slate-100 pb-1 mb-2 tracking-tight">{data.client.name || <span className="text-slate-300">クライアント名（サンプル）</span>}</h2>
+        <div className="text-xs text-slate-500">
           <p>〒{data.client.zipCode || '000-0000'}</p>
           <p>{data.client.address || 'クライアント住所（サンプル）'}</p>
         </div>
       </div>
 
       {/* Total Amount Banner */}
-      <div className={`p-6 mb-12 flex justify-between items-center rounded-2xl ${templateId === 'shadow' ? 'shadow-xl' : ''}`} style={{ backgroundColor: accentColor + '10' }}>
+      <div className={`p-4 mb-8 flex justify-between items-center rounded-xl ${templateId === 'shadow' ? 'shadow-lg' : ''}`} style={{ backgroundColor: accentColor + '10' }}>
         <span className="font-black text-slate-400 text-xs tracking-widest uppercase">ご請求金額 (税込)</span>
-        <span className="text-3xl md:text-4xl font-black tracking-tighter" style={{ color: accentColor }}>{formatCurrency(totals.grandTotal)}</span>
+        <span className="text-2xl md:text-3xl font-black tracking-tighter" style={{ color: accentColor }}>{formatCurrency(totals.grandTotal)}</span>
       </div>
 
       {/* Main Table */}
-      <div className="mb-10">
+      <div className="mb-8">
         <Table
           items={data.items}
           accentColor={accentColor}
@@ -164,7 +164,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
       </div>
 
       {/* Totals & Tax Breakdown */}
-      <div className="flex justify-end mb-12">
+      <div className="flex justify-end mb-8">
         <div className="w-full max-w-[320px] space-y-2">
           <div className="flex justify-between text-sm text-slate-500"><span>小計 (税抜)</span><span className="font-bold">{formatCurrency(totals.subtotal)}</span></div>
           <div className="flex justify-between text-sm text-slate-500"><span>消費税計</span><span className="font-bold">{formatCurrency(totals.totalTax)}</span></div>
@@ -186,14 +186,14 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
       </div>
 
       {/* Bank & Notes */}
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-6 sm:gap-8 mb-12">
-        <div className="sm:col-span-2 p-5 bg-slate-50 rounded-2xl">
-          <p className="text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">お振込先</p>
-          <p className="text-[11px] font-bold text-slate-600 leading-relaxed whitespace-pre-wrap">{data.issuer.bankInfo || '振込先銀行情報（サンプル）'}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 sm:gap-6 mb-8">
+        <div className="sm:col-span-2 p-4 bg-slate-50 rounded-xl">
+          <p className="text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest">お振込先</p>
+          <p className="text-[10px] font-bold text-slate-600 leading-relaxed whitespace-pre-wrap">{data.issuer.bankInfo || '振込先銀行情報（サンプル）'}</p>
         </div>
-        <div className="sm:col-span-3 p-5 border border-slate-100 rounded-2xl">
-          <p className="text-[10px] font-black text-slate-400 mb-2 uppercase tracking-widest">備考</p>
-          <p className="text-[11px] text-slate-500 leading-relaxed whitespace-pre-wrap">{data.notes || '備考・特記事項（サンプル）'}</p>
+        <div className="sm:col-span-3 p-4 border border-slate-100 rounded-xl">
+          <p className="text-[10px] font-black text-slate-400 mb-1 uppercase tracking-widest">備考</p>
+          <p className="text-[10px] text-slate-500 leading-relaxed whitespace-pre-wrap">{data.notes || '備考・特記事項（サンプル）'}</p>
         </div>
       </div>
 
