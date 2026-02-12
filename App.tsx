@@ -170,7 +170,7 @@ const App: React.FC = () => {
             el.style.minHeight = '297mm';
             el.style.height = 'auto'; // Allow expansion
             el.style.overflow = 'visible'; // Prevent clipping
-            el.style.padding = '20mm';
+            el.style.padding = '10mm'; // Reduce padding to fit more content without shrinking
             el.style.margin = '0';
             el.style.transform = 'none';
             el.style.boxSizing = 'border-box';
