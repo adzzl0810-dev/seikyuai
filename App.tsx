@@ -157,9 +157,9 @@ const App: React.FC = () => {
         scale: scale,
         useCORS: true,
         backgroundColor: '#ffffff',
-        // Force desktop viewport for consistent layout
+        // Force desktop viewport for consistent layout (Increase height to avoid clipping)
         windowWidth: 1280,
-        windowHeight: 720,
+        windowHeight: 3000,
         // Enable logging for debug
         logging: false,
         onclone: (clonedDoc) => {
@@ -168,6 +168,8 @@ const App: React.FC = () => {
             // Ensure consistency during capture
             el.style.width = '210mm';
             el.style.minHeight = '297mm';
+            el.style.height = 'auto'; // Allow expansion
+            el.style.overflow = 'visible'; // Prevent clipping
             el.style.padding = '20mm';
             el.style.margin = '0';
             el.style.transform = 'none';
