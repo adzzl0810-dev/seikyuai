@@ -193,10 +193,23 @@ const App: React.FC = () => {
       });
 
       const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const pdfPageWidth = pdf.internal.pageSize.getWidth();
+      const pdfPageHeight = pdf.internal.pageSize.getHeight();
 
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      // Calculate dimensions to fit within the page (Shrink to fit)
+      const widthRatio = pdfPageWidth / imgProps.width;
+      const heightRatio = pdfPageHeight / imgProps.height;
+      const ratio = Math.min(widthRatio, heightRatio);
+
+      const finalWidth = imgProps.width * ratio;
+      const finalHeight = imgProps.height * ratio;
+
+      // Center horizontally
+      const x = (pdfPageWidth - finalWidth) / 2;
+      // Top align
+      const y = 0;
+
+      pdf.addImage(imgData, 'JPEG', x, y, finalWidth, finalHeight);
       pdf.save(`${invoiceData.title}_${invoiceData.invoiceNumber}.pdf`);
 
       if (user) {
