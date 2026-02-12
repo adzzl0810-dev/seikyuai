@@ -10,13 +10,13 @@ export interface LineItem {
   description: string;
   quantity: number;
   unitPrice: number;
-  unit: string; 
+  unit: string;
   taxRate: TaxRate;
 }
 
 export interface Issuer {
   name: string;
-  registrationNumber: string; 
+  registrationNumber: string;
   address: string;
   zipCode: string;
   phone: string;
@@ -24,6 +24,7 @@ export interface Issuer {
   bankInfo: string;
   enableStamp: boolean;
   stampImageUrl?: string;
+  logoImageUrl?: string;
 }
 
 export interface Client {
@@ -56,11 +57,11 @@ export interface InvoiceTotals {
   taxSummaries: TaxSummary[];
 }
 
-export type TemplateId = 
-  | 'modern' | 'classic' | 'simple' 
-  | 'bold' | 'elegant' | 'tech' | 'nature' | 'grid' 
-  | 'corporate' | 'monochrome' | 'warm' | 'cool' | 'compact' 
-  | 'playful' | 'shadow' | 'borderless' | 'sharp' | 'soft' 
+export type TemplateId =
+  | 'modern' | 'classic' | 'simple'
+  | 'bold' | 'elegant' | 'tech' | 'nature' | 'grid'
+  | 'corporate' | 'monochrome' | 'warm' | 'cool' | 'compact'
+  | 'playful' | 'shadow' | 'borderless' | 'sharp' | 'soft'
   | 'vintage' | 'studio';
 
 export interface SavedInvoice extends InvoiceData {

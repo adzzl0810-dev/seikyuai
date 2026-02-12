@@ -40,14 +40,14 @@ const StampComponent: React.FC<{ text: string; imageUrl?: string; color?: string
   );
 };
 
-const Table: React.FC<{ 
-  items: InvoiceData['items']; 
-  accentColor: string; 
-  bordered?: boolean; 
+const Table: React.FC<{
+  items: InvoiceData['items'];
+  accentColor: string;
+  bordered?: boolean;
   headerStyle?: 'dark' | 'light' | 'colored' | 'none';
 }> = ({ items, accentColor, bordered, headerStyle = 'light' }) => {
   const getHeaderClass = () => {
-    switch(headerStyle) {
+    switch (headerStyle) {
       case 'dark': return 'bg-slate-900 text-white';
       case 'colored': return `text-white`;
       case 'none': return 'border-b-2 border-slate-900';
@@ -97,7 +97,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
   const isNoPrintBorder = ['simple', 'borderless', 'soft'].includes(templateId);
 
   return (
-    <div 
+    <div
       ref={previewRef}
       className={`print-area bg-white shadow-2xl box-border p-[15mm] md:p-[20mm] w-[210mm] min-h-[297mm] relative overflow-hidden transition-all duration-300 ${isSerif ? 'font-serif' : 'font-sans'}`}
       style={{ borderTop: isNoPrintBorder ? 'none' : `12px solid ${accentColor}` }}
@@ -121,14 +121,20 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
           </div>
         </div>
         <div className="text-left sm:text-right relative pt-2 w-full sm:w-auto flex flex-col sm:items-end">
-           <h3 className="text-2xl font-black mb-2 tracking-tight">{data.issuer.name || <span className="text-slate-200">自社名（サンプル）</span>}</h3>
-           <div className="text-[11px] leading-relaxed text-slate-500">
-             <p className="font-bold mb-1" style={{ color: accentColor }}>登録番号: {data.issuer.registrationNumber || 'T0000000000000'}</p>
-             <p>〒{data.issuer.zipCode || '000-0000'} {data.issuer.address || '自社住所（サンプル）'}</p>
-             <p>{(data.issuer.phone || data.issuer.email) ? `${data.issuer.phone} / ${data.issuer.email}` : 'TEL: 03-0000-0000 / info@example.com'}</p>
-           </div>
-           {/* Stamp moved here, relative flow */}
-           {data.issuer.enableStamp && <StampComponent text={data.issuer.name} imageUrl={data.issuer.stampImageUrl} />}
+          <h3 className="text-2xl font-black mb-2 tracking-tight">{data.issuer.name || <span className="text-slate-200">自社名（サンプル）</span>}</h3>
+          <div className="text-[11px] leading-relaxed text-slate-500">
+            <p className="font-bold mb-1" style={{ color: accentColor }}>登録番号: {data.issuer.registrationNumber || 'T0000000000000'}</p>
+            <p>〒{data.issuer.zipCode || '000-0000'} {data.issuer.address || '自社住所（サンプル）'}</p>
+            <p>{(data.issuer.phone || data.issuer.email) ? `${data.issuer.phone} / ${data.issuer.email}` : 'TEL: 03-0000-0000 / info@example.com'}</p>
+          </div>
+
+          {/* Logo & Stamp */}
+          <div className="flex gap-4 mt-4 justify-end items-start w-full">
+            {data.issuer.logoImageUrl && (
+              <img src={data.issuer.logoImageUrl} alt="Logo" className="h-16 object-contain" />
+            )}
+            {data.issuer.enableStamp && <StampComponent text={data.issuer.name} imageUrl={data.issuer.stampImageUrl} />}
+          </div>
         </div>
       </div>
 
@@ -149,9 +155,9 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
 
       {/* Main Table */}
       <div className="mb-10">
-        <Table 
-          items={data.items} 
-          accentColor={accentColor} 
+        <Table
+          items={data.items}
+          accentColor={accentColor}
           bordered={isBordered}
           headerStyle={isDarkHeader ? 'dark' : isColoredHeader ? 'colored' : 'light'}
         />
@@ -162,14 +168,14 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
         <div className="w-full max-w-[320px] space-y-2">
           <div className="flex justify-between text-sm text-slate-500"><span>小計 (税抜)</span><span className="font-bold">{formatCurrency(totals.subtotal)}</span></div>
           <div className="flex justify-between text-sm text-slate-500"><span>消費税計</span><span className="font-bold">{formatCurrency(totals.totalTax)}</span></div>
-          
+
           <div className="py-2 border-t border-b border-slate-100 mt-2 space-y-1">
-             {totals.taxSummaries.map(s => (
-               <div key={s.rate} className="flex justify-between text-[10px] text-slate-400">
-                 <span>{s.rate * 100}% 対象 ({formatCurrency(s.taxableAmount)})</span>
-                 <span>税額: {formatCurrency(s.taxAmount)}</span>
-               </div>
-             ))}
+            {totals.taxSummaries.map(s => (
+              <div key={s.rate} className="flex justify-between text-[10px] text-slate-400">
+                <span>{s.rate * 100}% 対象 ({formatCurrency(s.taxableAmount)})</span>
+                <span>税額: {formatCurrency(s.taxAmount)}</span>
+              </div>
+            ))}
           </div>
 
           <div className="flex justify-between text-2xl font-black pt-2" style={{ color: accentColor }}>
@@ -194,7 +200,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
       {/* Compliance Footer */}
       <div className="absolute bottom-10 left-0 right-0 text-center opacity-30 pointer-events-none px-6">
         <p className="text-[8px] md:text-[9px] font-black text-slate-400 tracking-[0.2em] uppercase leading-relaxed">
-          Qualified Invoice compliant with Japanese Tax Law. Registration: {data.issuer.registrationNumber}<br/>
+          Qualified Invoice compliant with Japanese Tax Law. Registration: {data.issuer.registrationNumber}<br />
           Created with Seikyu AI. We take no legal responsibility for the contents.
         </p>
       </div>
