@@ -29,6 +29,7 @@ import { ContactModal } from './components/ContactModal';
 import { ConversionModal } from './components/ConversionModal';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { supabase } from './services/supabase';
 
 const TEMPLATES: { id: TemplateId, label: string }[] = [
   { id: 'modern', label: 'モダン' }, { id: 'classic', label: 'クラシック' }, { id: 'simple', label: 'シンプル' },
@@ -93,11 +94,58 @@ const App: React.FC = () => {
 
   useEffect(() => { saveDraft(invoiceData); }, [invoiceData]);
 
+  /* 
+   * Supabase Auth Integration
+   * Replaces local storage auth with Supabase Auth listener
+   */
+  useEffect(() => {
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        const userProfile: UserProfile = {
+          id: session.user.id,
+          name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          avatarUrl: session.user.user_metadata.avatar_url,
+        };
+        setUser(userProfile);
+
+        // Load preferences if any
+        // const prefs = getUserPreferences(userProfile.email); // Local prefs might need migration or sync
+        // if (prefs) setInvoiceData(prev => ({ ...prev, issuer: prefs }));
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const userProfile: UserProfile = {
+          id: session.user.id,
+          name: session.user.user_metadata.full_name || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          avatarUrl: session.user.user_metadata.avatar_url,
+        };
+        setUser(userProfile);
+      } else {
+        setUser(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Sync user changes to local history/prefs 
+  // (We might want to move this to a dedicated sync service later)
   useEffect(() => {
     if (user) {
-      setHistory(getInvoiceHistory(user.email));
+      // Fetch from Supabase (async)
+      getInvoiceHistory(user.email, user.id).then(hist => setHistory(hist));
+
       const prefs = getUserPreferences(user.email);
       if (prefs) setInvoiceData(prev => ({ ...prev, issuer: prefs }));
+    } else {
+      setHistory([]);
     }
   }, [user]);
 
@@ -258,8 +306,9 @@ const App: React.FC = () => {
 
       if (user) {
         const saved: SavedInvoice = { ...invoiceData, id: crypto.randomUUID(), createdAt: Date.now(), templateId: template };
-        saveInvoiceToHistory(user.email, saved);
-        setHistory(getInvoiceHistory(user.email));
+        saveInvoiceToHistory(user.email, saved, user.id);
+        setHistory(prev => [saved, ...prev]); // Optimistic update
+        // getInvoiceHistory(user.email, user.id).then(setHistory); // Re-fetch to confirm (optional)
       }
       alert("PDFをダウンロードしました！✨\n※いかなる損害についても当サービスは責任を負いません。");
     } catch (e: any) {
@@ -283,7 +332,11 @@ const App: React.FC = () => {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onLoginClick={() => setIsAuthModalOpen(true)}
-          onLogoutClick={() => { logoutUser(); setUser(null); }}
+          onLogoutClick={() => {
+            supabase.auth.signOut();
+            logoutUser(); // Clear local storage if needed
+            setUser(null);
+          }}
           onHistoryClick={() => setShowHistory(!showHistory)}
           onConvertClick={() => setIsConversionOpen(true)}
         />
@@ -447,7 +500,11 @@ const App: React.FC = () => {
                       <div className="text-[10px] font-black text-indigo-400 mb-2 uppercase tracking-widest">{new Date(item.createdAt).toLocaleString()}</div>
                       <div className="font-black text-slate-800 text-lg mb-1 truncate">{item.client.name}</div>
                       <div className="text-sm font-bold text-slate-400">#{item.invoiceNumber}</div>
-                      <button onClick={(e) => { e.stopPropagation(); deleteInvoiceFromHistory(user!.email, item.id); setHistory(getInvoiceHistory(user!.email)); }} className="absolute top-4 right-4 bg-white text-slate-200 hover:text-red-500 shadow-sm p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all border border-slate-100"><Trash2 size={16} /></button>
+                      <button onClick={(e) => {
+                        e.stopPropagation();
+                        deleteInvoiceFromHistory(user!.email, item.id, user!.id)
+                          .then(() => setHistory(prev => prev.filter(h => h.id !== item.id)));
+                      }} className="absolute top-4 right-4 bg-white text-slate-200 hover:text-red-500 shadow-sm p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all border border-slate-100"><Trash2 size={16} /></button>
                     </div>
                   ))
                 )}

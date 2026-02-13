@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { User, KeyRound, LogIn, UserPlus, X, AlertCircle } from 'lucide-react';
-import { loginUser, registerUser } from '../services/storageService';
+import { User, KeyRound, LogIn, UserPlus, X, AlertCircle, Mail, Lock } from 'lucide-react';
+import { supabase } from '../services/supabase';
 import { UserProfile } from '../types';
 
 interface AuthModalProps {
@@ -11,56 +11,82 @@ interface AuthModalProps {
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [pin, setPin] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setMessage(null);
+    setLoading(true);
 
-    if (pin.length !== 4 || isNaN(Number(pin))) {
-        setError('PINコードは4桁の数字で入力してください');
-        return;
-    }
+    try {
+      if (mode === 'login') {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
 
-    if (mode === 'login') {
-      const result = loginUser(username, pin);
-      if (result.success && result.user) {
-        onLoginSuccess(result.user);
-        onClose();
-        // Reset form
-        setUsername('');
-        setPin('');
+        if (error) throw error;
+
+        if (data.user) {
+          // Fetch profile if needed, or just use auth data
+          // For now, construct a basic profile from auth data
+          const userProfile: UserProfile = {
+            name: data.user.user_metadata.full_name || email.split('@')[0],
+            email: data.user.email || '',
+            avatarUrl: data.user.user_metadata.avatar_url,
+            id: data.user.id
+          };
+          onLoginSuccess(userProfile);
+          onClose();
+          resetForm();
+        }
       } else {
-        setError(result.error || 'ログインに失敗しました');
+        // Register
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              full_name: displayName,
+              avatar_url: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random&color=fff&size=128`
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          setMessage('確認メールを送信しました。メール内のリンクをクリックして登録を完了してください。');
+          // Don't close immediately, let them see the message
+        }
       }
-    } else {
-      if (!displayName.trim()) {
-        setError('表示名を入力してください');
-        return;
-      }
-      const result = registerUser(username, displayName, pin);
-      if (result.success && result.user) {
-        onLoginSuccess(result.user);
-        onClose();
-        // Reset form
-        setUsername('');
-        setDisplayName('');
-        setPin('');
-      } else {
-        setError(result.error || '登録に失敗しました');
-      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'エラーが発生しました');
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setEmail('');
+    setPassword('');
+    setDisplayName('');
+    setError(null);
+    setMessage(null);
   };
 
   const switchMode = (newMode: 'login' | 'register') => {
     setMode(newMode);
-    setError(null);
-    setPin('');
+    resetForm();
   };
 
   return (
@@ -73,19 +99,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
           </button>
           <h2 className="text-xl font-bold flex items-center gap-2">
             {mode === 'login' ? <LogIn size={24} /> : <UserPlus size={24} />}
-            {mode === 'login' ? 'アカウントにログイン' : '新規アカウント作成'}
+            {mode === 'login' ? 'ログイン' : '新規登録'}
           </h2>
           <p className="text-indigo-200 text-xs mt-2">
-            {mode === 'login' 
-              ? '設定したIDとPINコードを入力してください' 
-              : 'IDと4桁のPINコードを設定して、データを安全に管理しましょう'}
+            {mode === 'login'
+              ? 'メールアドレスとパスワードを入力してください'
+              : 'アカウントを作成してデータをクラウドに保存しましょう'}
           </p>
         </div>
 
         {/* Body */}
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
-            
+
             {error && (
               <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg flex items-center gap-2">
                 <AlertCircle size={16} className="shrink-0" />
@@ -93,78 +119,87 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
               </div>
             )}
 
+            {message && (
+              <div className="bg-green-50 text-green-600 text-sm p-3 rounded-lg flex items-center gap-2">
+                <AlertCircle size={16} className="shrink-0" />
+                {message}
+              </div>
+            )}
+
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1">ユーザーID (半角英数)</label>
+              <label className="block text-sm font-bold text-slate-700 mb-1">メールアドレス</label>
               <div className="relative">
-                <User className="absolute left-3 top-2.5 text-slate-400" size={18} />
+                <Mail className="absolute left-3 top-2.5 text-slate-400" size={18} />
                 <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                  placeholder="例: user01"
+                  placeholder="name@example.com"
                   required
-                  pattern="^[a-zA-Z0-9_]+$"
-                  title="半角英数字で入力してください"
                 />
               </div>
             </div>
 
             {mode === 'register' && (
               <div className="animate-fade-in-up">
-                <label className="block text-sm font-bold text-slate-700 mb-1">表示名 (請求書には表示されません)</label>
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                  placeholder="例: 山田 太郎"
-                />
+                <label className="block text-sm font-bold text-slate-700 mb-1">表示名</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-2.5 text-slate-400" size={18} />
+                  <input
+                    type="text"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="w-full pl-10 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                    placeholder="山田 太郎"
+                    required
+                  />
+                </div>
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-1">PINコード (4桁の数字)</label>
+              <label className="block text-sm font-bold text-slate-700 mb-1">パスワード</label>
               <div className="relative">
-                <KeyRound className="absolute left-3 top-2.5 text-slate-400" size={18} />
+                <Lock className="absolute left-3 top-2.5 text-slate-400" size={18} />
                 <input
                   type="password"
-                  inputMode="numeric"
-                  maxLength={4}
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, ''))}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-mono tracking-widest text-lg"
-                  placeholder="0000"
+                  placeholder="••••••••"
                   required
+                  minLength={6}
                 />
               </div>
-              <p className="text-xs text-slate-400 mt-1">※他人のアクセスを防ぐための暗証番号です</p>
+              <p className="text-xs text-slate-400 mt-1">※6文字以上のパスワードを設定してください</p>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg shadow-indigo-200 transition-all active:scale-95 flex justify-center items-center gap-2 mt-4"
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg shadow-indigo-200 transition-all active:scale-95 flex justify-center items-center gap-2 mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {mode === 'login' ? 'ログイン' : 'アカウントを作成'}
+              {loading ? '処理中...' : (mode === 'login' ? 'ログイン' : 'アカウントを作成')}
             </button>
           </form>
 
           <div className="mt-6 pt-6 border-t border-slate-100 text-center">
-             {mode === 'login' ? (
-               <p className="text-sm text-slate-600">
-                 アカウントをお持ちでないですか？<br/>
-                 <button onClick={() => switchMode('register')} className="text-indigo-600 font-bold hover:underline mt-1">
-                   新規登録はこちら
-                 </button>
-               </p>
-             ) : (
-               <p className="text-sm text-slate-600">
-                 すでに登録済みですか？<br/>
-                 <button onClick={() => switchMode('login')} className="text-indigo-600 font-bold hover:underline mt-1">
-                   ログインはこちら
-                 </button>
-               </p>
-             )}
+            {mode === 'login' ? (
+              <p className="text-sm text-slate-600">
+                アカウントをお持ちでないですか？<br />
+                <button onClick={() => switchMode('register')} className="text-indigo-600 font-bold hover:underline mt-1">
+                  新規登録はこちら
+                </button>
+              </p>
+            ) : (
+              <p className="text-sm text-slate-600">
+                すでに登録済みですか？<br />
+                <button onClick={() => switchMode('login')} className="text-indigo-600 font-bold hover:underline mt-1">
+                  ログインはこちら
+                </button>
+              </p>
+            )}
           </div>
         </div>
       </div>

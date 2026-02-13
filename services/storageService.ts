@@ -1,75 +1,14 @@
 import { SavedInvoice, UserProfile, Issuer } from "../types";
+import { supabase } from "./supabase";
 
 const STORAGE_KEY_PREFIX = 'seikyu_ai_';
-const USERS_DB_KEY = 'seikyu_ai_users_db';
+const USERS_DB_KEY = 'seikyu_ai_users_db'; // Legacy local auth (deprecating, but kept for fallback)
 const DRAFT_KEY = 'seikyu_ai_guest_draft';
 const PREF_KEY_SUFFIX = '_preferences';
 
-// --- Auth Types ---
-interface UserRecord {
-  username: string;
-  pinHash: string; // Simple hash
-  profile: UserProfile;
-}
-
-interface UsersDB {
-  [username: string]: UserRecord;
-}
-
-// --- Helper: Simple Hash (For frontend separation only) ---
-const hashPin = (pin: string): string => {
-  // Simple Base64 + reverse to obscure the PIN in localStorage
-  return btoa(pin).split('').reverse().join('');
-};
-
-// --- Auth Functions ---
-
-export const registerUser = (username: string, displayName: string, pin: string): { success: boolean; user?: UserProfile; error?: string } => {
-  const dbJSON = localStorage.getItem(USERS_DB_KEY);
-  const db: UsersDB = dbJSON ? JSON.parse(dbJSON) : {};
-
-  if (db[username]) {
-    return { success: false, error: "このユーザーIDは既に使用されています" };
-  }
-
-  const profile: UserProfile = {
-    name: displayName,
-    email: `${username}@local`, // Use username as ID for storage keys
-    avatarUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random&color=fff&size=128`
-  };
-
-  db[username] = {
-    username,
-    pinHash: hashPin(pin),
-    profile
-  };
-
-  localStorage.setItem(USERS_DB_KEY, JSON.stringify(db));
-  localStorage.setItem('seikyu_current_user_profile', JSON.stringify(profile));
-  
-  return { success: true, user: profile };
-};
-
-export const loginUser = (username: string, pin: string): { success: boolean; user?: UserProfile; error?: string } => {
-  const dbJSON = localStorage.getItem(USERS_DB_KEY);
-  if (!dbJSON) return { success: false, error: "ユーザーが見つかりません" };
-  
-  const db: UsersDB = JSON.parse(dbJSON);
-  const record = db[username];
-
-  if (!record) {
-    return { success: false, error: "ユーザーが見つかりません" };
-  }
-
-  if (record.pinHash !== hashPin(pin)) {
-    return { success: false, error: "PINコードが間違っています" };
-  }
-
-  // Login Success
-  localStorage.setItem('seikyu_current_user_profile', JSON.stringify(record.profile));
-  return { success: true, user: record.profile };
-};
-
+// --- Auth Functions (Legacy / Local) ---
+// Kept for backward compatibility or if we want to support "offline local users" effectively.
+// But for now, App.tsx primarily uses Supabase Auth.
 export const logoutUser = () => {
   localStorage.removeItem('seikyu_current_user_profile');
 };
@@ -80,6 +19,7 @@ export const getCurrentUser = (): UserProfile | null => {
 };
 
 // --- User Preferences (Issuer Info Persistence) ---
+// Todo: Sync this with a 'profiles' table in Supabase
 export const saveUserPreferences = (userEmail: string, issuer: Issuer) => {
   const key = `${STORAGE_KEY_PREFIX}${userEmail}${PREF_KEY_SUFFIX}`;
   localStorage.setItem(key, JSON.stringify(issuer));
@@ -91,33 +31,87 @@ export const getUserPreferences = (userEmail: string): Issuer | null => {
   return json ? JSON.parse(json) : null;
 };
 
-// --- History Management ---
-export const saveInvoiceToHistory = (userEmail: string, invoice: SavedInvoice) => {
+// --- History Management (Hybrid: Supabase + Local) ---
+
+export const saveInvoiceToHistory = async (userEmail: string, invoice: SavedInvoice, userId?: string) => {
+  // If we have a userId, try to save to Supabase
+  if (userId) {
+    try {
+      const { error } = await supabase
+        .from('invoices')
+        .upsert({
+          id: invoice.id,
+          user_id: userId,
+          template_id: invoice.templateId,
+          invoice_number: invoice.invoiceNumber,
+          client_name: invoice.client.name,
+          data: invoice,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) {
+        console.error('Supabase save error:', error);
+        // Fallback to local storage or just log error?
+        // For now, let's behave as if we also save locally for redundancy/cache
+      }
+    } catch (e) {
+      console.error('Supabase save exception:', e);
+    }
+  }
+
+  // Always save to local storage as cache/offline backup (for now)
   const key = `${STORAGE_KEY_PREFIX}${userEmail}_history`;
   const historyJSON = localStorage.getItem(key);
   let history: SavedInvoice[] = historyJSON ? JSON.parse(historyJSON) : [];
-  
+
   const index = history.findIndex(h => h.id === invoice.id);
   if (index >= 0) {
     history[index] = invoice;
   } else {
     history.push(invoice);
   }
-  
+
   localStorage.setItem(key, JSON.stringify(history));
 };
 
-export const getInvoiceHistory = (userEmail: string): SavedInvoice[] => {
+export const getInvoiceHistory = async (userEmail: string, userId?: string): Promise<SavedInvoice[]> => {
+  // Try to fetch from Supabase if online and authorized
+  if (userId) {
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('data')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      // Map back to SavedInvoice[]
+      const remoteHistory = data.map((row: any) => row.data as SavedInvoice);
+
+      // Update local cache
+      const key = `${STORAGE_KEY_PREFIX}${userEmail}_history`;
+      localStorage.setItem(key, JSON.stringify(remoteHistory));
+
+      return remoteHistory;
+    } else if (error) {
+      console.error("Supabase fetch error:", error);
+    }
+  }
+
+  // Fallback to local storage
   const key = `${STORAGE_KEY_PREFIX}${userEmail}_history`;
   const historyJSON = localStorage.getItem(key);
   return historyJSON ? JSON.parse(historyJSON) : [];
 };
 
-export const deleteInvoiceFromHistory = (userEmail: string, invoiceId: string) => {
+export const deleteInvoiceFromHistory = async (userEmail: string, invoiceId: string, userId?: string) => {
+  if (userId) {
+    await supabase.from('invoices').delete().eq('id', invoiceId);
+  }
+
   const key = `${STORAGE_KEY_PREFIX}${userEmail}_history`;
   const historyJSON = localStorage.getItem(key);
   if (!historyJSON) return;
-  
+
   let history: SavedInvoice[] = JSON.parse(historyJSON);
   history = history.filter(h => h.id !== invoiceId);
   localStorage.setItem(key, JSON.stringify(history));
