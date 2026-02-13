@@ -303,7 +303,6 @@ const App: React.FC = () => {
             <ClientTab
               invoiceData={invoiceData}
               setInvoiceData={setInvoiceData}
-              handleZipLookup={handleZipLookup}
             />
           )}
 

@@ -3,6 +3,7 @@ import {
     Info, FileType, Plus, Copy, Trash2, FileText
 } from 'lucide-react';
 import { InvoiceData, TaxRate, LineItem } from '../../../types';
+import { INDUSTRY_PRESETS, IndustryPreset } from '../../../utils/presets';
 
 interface ItemsTabProps {
     invoiceData: InvoiceData;
@@ -19,6 +20,21 @@ const ItemsTab: React.FC<ItemsTabProps> = ({
     unitSuggestions,
     duplicateItem
 }) => {
+    const handleApplyPreset = (preset: IndustryPreset) => {
+        // Simple confirmation if items exist
+        if (invoiceData.items.length > 0) {
+            if (!confirm(`「${preset.label}」の明細プリセットを適用しますか？\n現在の明細は上書きされます。`)) {
+                return;
+            }
+        }
+
+        const newItems = preset.items.map(item => ({
+            id: Math.random().toString(),
+            ...item
+        }));
+        setInvoiceData(d => ({ ...d, items: newItems }));
+    };
+
     return (
         <div className="space-y-8 animate-in fade-in duration-300">
             <div className="p-6 bg-slate-50 border border-slate-100 rounded-[2rem] space-y-4 shadow-sm">
@@ -55,6 +71,32 @@ const ItemsTab: React.FC<ItemsTabProps> = ({
                         <label className="text-[9px] font-black text-slate-400 mb-1 block uppercase tracking-tighter">支払期限</label>
                         <input type="date" className="w-full text-xs font-bold border-none focus:ring-0 p-0 bg-white" value={invoiceData.dueDate} onChange={e => setInvoiceData(d => ({ ...d, dueDate: e.target.value }))} />
                     </div>
+                </div>
+            </div>
+
+
+
+            {/* Industry Presets */}
+            <div className="bg-white border-2 border-slate-100 p-5 rounded-[2rem] shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">業種別プリセット（一発入力）</span>
+                    <span className="bg-indigo-100 text-indigo-600 text-[9px] font-bold px-2 py-0.5 rounded-full">NEW</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                    {INDUSTRY_PRESETS.map((preset) => (
+                        <button
+                            key={preset.id}
+                            type="button"
+                            onClick={() => handleApplyPreset(preset)}
+                            className="flex items-center gap-2 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 rounded-xl px-4 py-3 transition-all active:scale-95 group text-left flex-1 min-w-[120px]"
+                        >
+                            <span className="text-xl group-hover:scale-110 transition-transform block">{preset.icon}</span>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-black text-slate-700 group-hover:text-indigo-700 leading-tight">{preset.label}</span>
+                                <span className="text-[8px] font-bold text-slate-400 group-hover:text-indigo-400">一括入力</span>
+                            </div>
+                        </button>
+                    ))}
                 </div>
             </div>
 
@@ -186,7 +228,7 @@ const ItemsTab: React.FC<ItemsTabProps> = ({
                     <textarea className="w-full text-sm font-bold border-none p-0 h-24 resize-none bg-white focus:ring-0" placeholder="振込手数料は貴社負担にて..." value={invoiceData.notes} onChange={e => setInvoiceData(d => ({ ...d, notes: e.target.value }))} />
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

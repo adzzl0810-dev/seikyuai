@@ -30,8 +30,33 @@ const IssuerTab: React.FC<IssuerTabProps> = ({
                     <label className={`text-[9px] font-black uppercase mb-1 block ${isRegNumValid(invoiceData.issuer.registrationNumber) ? 'text-green-600' : 'text-red-600'}`}>登録番号 (T+13桁)</label>
                     <input className="w-full bg-transparent border-none p-0 font-mono text-slate-800 font-black focus:ring-0" placeholder="T1234567890123" value={invoiceData.issuer.registrationNumber} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, registrationNumber: e.target.value } }))} />
                 </div>
+                import {fetchAddressByZipCode} from '../../../utils/address';
+
+                // ... (inside component)
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-slate-50 p-4 rounded-2xl shadow-inner"><label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">郵便番号</label><input className="w-full bg-transparent border-none p-0 font-bold text-xs focus:ring-0" placeholder="105-0011" value={invoiceData.issuer.zipCode} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, zipCode: e.target.value } }))} /></div>
+                    <div className="bg-slate-50 p-4 rounded-2xl shadow-inner relative">
+                        <label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">郵便番号</label>
+                        <input
+                            className="w-full bg-transparent border-none p-0 font-bold text-xs focus:ring-0"
+                            placeholder="105-0011"
+                            value={invoiceData.issuer.zipCode}
+                            onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, zipCode: e.target.value } }))}
+                            onBlur={async (e) => {
+                                const val = e.target.value;
+                                if (val.length >= 7) {
+                                    const addr = await fetchAddressByZipCode(val);
+                                    if (addr) {
+                                        setInvoiceData(d => ({
+                                            ...d,
+                                            issuer: { ...d.issuer, address: addr.fullAddress }
+                                        }));
+                                    }
+                                }
+                            }}
+                        />
+                        <div className="absolute top-4 right-4 text-[9px] text-slate-400 font-bold opacity-50">自動入力</div>
+                    </div>
                     <div className="bg-slate-50 p-4 rounded-2xl shadow-inner"><label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">電話番号</label><input className="w-full bg-transparent border-none p-0 font-bold text-xs focus:ring-0" placeholder="03-0000-0000" value={invoiceData.issuer.phone} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, phone: e.target.value } }))} /></div>
                 </div>
                 <div className="bg-slate-50 p-4 rounded-2xl shadow-inner"><label className="text-[9px] font-black text-slate-400 mb-1 block uppercase">住所</label><textarea className="w-full bg-transparent border-none p-0 h-16 text-xs font-bold resize-none focus:ring-0" placeholder="東京都港区芝公園4丁目2-8" value={invoiceData.issuer.address} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, address: e.target.value } }))} /></div>
