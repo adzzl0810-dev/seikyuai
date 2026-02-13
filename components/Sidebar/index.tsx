@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
     History as HistoryIcon, LogOut, FileText, Info,
     Building, Palette, BookOpen, Copy
@@ -23,6 +24,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     onHistoryClick,
     onConvertClick
 }) => {
+    const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
     return (
         <>
             <header className="px-6 py-6 border-b flex items-center justify-between shrink-0">
@@ -38,11 +41,33 @@ const Sidebar: React.FC<SidebarProps> = ({
                     {user ? (
                         <div className="flex items-center gap-2">
                             <button onClick={onHistoryClick} className="p-2.5 hover:bg-slate-50 rounded-xl text-slate-500 transition-all border border-slate-100"><HistoryIcon size={20} /></button>
-                            <div className="group relative">
-                                <img src={user.avatarUrl} className="w-10 h-10 rounded-full ring-2 ring-indigo-50 cursor-pointer shadow-md" alt="avatar" />
-                                <div className="absolute right-0 top-full mt-3 hidden group-hover:block bg-white shadow-2xl rounded-2xl p-2 min-w-[160px] border border-slate-100 z-50">
-                                    <button onClick={onLogoutClick} className="w-full flex items-center gap-3 text-sm p-4 hover:bg-red-50 rounded-xl text-red-600 font-black transition-all"><LogOut size={16} /> ログアウト</button>
-                                </div>
+                            <div className="relative">
+                                {isProfileMenuOpen && (
+                                    <div className="fixed inset-0 z-40" onClick={() => setIsProfileMenuOpen(false)}></div>
+                                )}
+                                <img
+                                    src={user.avatarUrl}
+                                    className="w-10 h-10 rounded-full ring-2 ring-indigo-50 cursor-pointer shadow-md hover:ring-indigo-200 transition-all active:scale-95"
+                                    alt="avatar"
+                                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                                />
+                                {isProfileMenuOpen && (
+                                    <div className="absolute right-0 top-full mt-3 bg-white shadow-xl rounded-2xl p-2 min-w-[200px] border border-slate-100 z-50 animate-in fade-in zoom-in-95 duration-200">
+                                        <div className="px-4 py-3 border-b border-gray-100 mb-2">
+                                            <p className="text-sm font-bold text-gray-900 truncate">{user.name}</p>
+                                            <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setIsProfileMenuOpen(false);
+                                                onLogoutClick();
+                                            }}
+                                            className="w-full flex items-center gap-3 text-sm p-3 hover:bg-red-50 rounded-xl text-red-600 font-bold transition-all"
+                                        >
+                                            <LogOut size={16} /> ログアウト
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ) : (

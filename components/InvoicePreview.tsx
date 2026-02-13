@@ -197,13 +197,7 @@ export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, te
         </div>
       </div>
 
-      {/* Compliance Footer */}
-      <div className="absolute bottom-8 left-0 right-0 text-center opacity-30 pointer-events-none px-6">
-        <p className="text-[7px] font-black text-slate-400 tracking-[0.2em] uppercase leading-relaxed">
-          Qualified Invoice compliant with Japanese Tax Law. Registration: {data.issuer.registrationNumber}<br />
-          Created with Seikyu AI. We take no legal responsibility for the contents.
-        </p>
-      </div>
+
 
       <style>{`
         @media print {
