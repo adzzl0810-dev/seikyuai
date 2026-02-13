@@ -62,7 +62,7 @@ export type TemplateId =
   | 'bold' | 'elegant' | 'tech' | 'nature' | 'grid'
   | 'corporate' | 'monochrome' | 'warm' | 'cool' | 'compact'
   | 'playful' | 'shadow' | 'borderless' | 'sharp' | 'soft'
-  | 'vintage' | 'studio';
+  | 'vintage' | 'studio' | 'receipt';
 
 export interface SavedInvoice extends InvoiceData {
   id: string;

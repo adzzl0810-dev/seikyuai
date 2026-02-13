@@ -89,7 +89,13 @@ const Table: React.FC<{
   );
 };
 
+import { ReceiptTemplate } from './ReceiptTemplate';
+
 export const InvoicePreview: React.FC<InvoicePreviewProps> = ({ data, totals, templateId, previewRef, accentColor = '#4f46e5' }) => {
+  if (templateId === 'receipt') {
+    return <ReceiptTemplate data={data} totals={totals} previewRef={previewRef} />;
+  }
+
   const isSerif = ['classic', 'elegant', 'vintage', 'soft'].includes(templateId);
   const isDarkHeader = ['tech', 'monochrome', 'sharp', 'corporate'].includes(templateId);
   const isColoredHeader = ['bold', 'nature', 'playful', 'studio', 'warm', 'cool'].includes(templateId);

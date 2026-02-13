@@ -39,8 +39,8 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 </div>
                 <div className="space-y-4 pt-4 border-t border-slate-50">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block px-1">20種類のテンプレート</label>
-                    <div className="grid grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-3 custom-scrollbar">
-                        {templates.map(t => (
+                    <div className="grid grid-cols-2 gap-3 max-h-[320px] overflow-y-auto pr-3 custom-scrollbar">
+                        {templates.filter(t => t.id !== 'receipt').map(t => (
                             <button
                                 key={t.id}
                                 onClick={() => setTemplate(t.id)}
@@ -48,6 +48,26 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                             >
                                 <LayoutTemplate size={18} className={template === t.id ? 'text-indigo-400' : 'text-slate-200'} />
                                 {t.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Special Templates Section */}
+                <div className="space-y-4 pt-4 border-t border-slate-50">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block px-1">特殊レイアウト</label>
+                    <div className="grid grid-cols-1 gap-3">
+                        {templates.filter(t => t.id === 'receipt').map(t => (
+                            <button
+                                key={t.id}
+                                onClick={() => setTemplate(t.id)}
+                                className={`group py-4 px-6 rounded-2xl border-2 text-xs font-black transition-all flex items-center justify-between ${template === t.id ? 'bg-slate-900 text-white border-slate-900 shadow-xl' : 'bg-white text-slate-600 border-slate-100 hover:border-indigo-200'}`}
+                            >
+                                <span className="flex items-center gap-3">
+                                    <span className={`p-2 rounded-lg ${template === t.id ? 'bg-white/10 text-indigo-400' : 'bg-indigo-50 text-indigo-500'}`}><LayoutTemplate size={16} /></span>
+                                    {t.label}
+                                </span>
+                                {template === t.id && <span className="text-[10px] bg-indigo-500 text-white px-2 py-0.5 rounded-full">選択中</span>}
                             </button>
                         ))}
                     </div>

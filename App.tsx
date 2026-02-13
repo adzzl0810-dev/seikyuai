@@ -38,7 +38,7 @@ const TEMPLATES: { id: TemplateId, label: string }[] = [
   { id: 'monochrome', label: 'モノクロ' }, { id: 'warm', label: 'ウォーム' }, { id: 'cool', label: 'クール' },
   { id: 'compact', label: 'コンパクト' }, { id: 'playful', label: 'プレイフル' }, { id: 'shadow', label: 'シャドウ' },
   { id: 'borderless', label: '枠なし' }, { id: 'sharp', label: 'シャープ' }, { id: 'soft', label: 'ソフト' },
-  { id: 'vintage', label: 'ビンテージ' }, { id: 'studio', label: 'スタジオ' }
+  { id: 'vintage', label: 'ビンテージ' }, { id: 'studio', label: 'スタジオ' }, { id: 'receipt', label: 'レシート (感熱紙)' }
 ];
 
 const UNIT_SUGGESTIONS = ['式', '個', '月', 'h', '日', '件'];
@@ -51,7 +51,7 @@ const App: React.FC = () => {
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isContactOpen, setIsContactOpen] = useState(false);
-  const [isConversionOpen, setIsConversionOpen] = useState(false); // New State
+  const [isConversionOpen, setIsConversionOpen] = useState(false);
   const [history, setHistory] = useState<SavedInvoice[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [themeColor, setThemeColor] = useState('#4f46e5');
@@ -60,7 +60,6 @@ const App: React.FC = () => {
 
   const [invoiceData, setInvoiceData] = useState<InvoiceData>(() => {
     const saved = loadDraft();
-    // Default data with empty fields for better UX (placeholders will be shown)
     const defaultData: InvoiceData = {
       title: '御請求書',
       invoiceNumber: `INV-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-001`,
@@ -81,7 +80,6 @@ const App: React.FC = () => {
       notes: ""
     };
 
-    // Merge saved data with default data to ensure all properties (like title) exist
     if (saved) {
       return { ...defaultData, ...saved };
     }
@@ -94,12 +92,7 @@ const App: React.FC = () => {
 
   useEffect(() => { saveDraft(invoiceData); }, [invoiceData]);
 
-  /* 
-   * Supabase Auth Integration
-   * Replaces local storage auth with Supabase Auth listener
-   */
   useEffect(() => {
-    // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         const userProfile: UserProfile = {
@@ -109,10 +102,6 @@ const App: React.FC = () => {
           avatarUrl: session.user.user_metadata.avatar_url,
         };
         setUser(userProfile);
-
-        // Load preferences if any
-        // const prefs = getUserPreferences(userProfile.email); // Local prefs might need migration or sync
-        // if (prefs) setInvoiceData(prev => ({ ...prev, issuer: prefs }));
       }
     });
 
@@ -135,13 +124,9 @@ const App: React.FC = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Sync user changes to local history/prefs 
-  // (We might want to move this to a dedicated sync service later)
   useEffect(() => {
     if (user) {
-      // Fetch from Supabase (async)
       getInvoiceHistory(user.email, user.id).then(hist => setHistory(hist));
-
       const prefs = getUserPreferences(user.email);
       if (prefs) setInvoiceData(prev => ({ ...prev, issuer: prefs }));
     } else {
@@ -193,7 +178,6 @@ const App: React.FC = () => {
 
   const handleConvert = (targetTitle: string) => {
     setInvoiceData(prev => {
-      // Generate new number
       const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
       const newNumber = `INV-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${randomSuffix}`;
 
@@ -205,7 +189,6 @@ const App: React.FC = () => {
         dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       };
 
-      // If converting to Quote, maybe change number prefix? Kept simple for now.
       if (targetTitle.includes('見積')) {
         newData.invoiceNumber = newData.invoiceNumber.replace('INV', 'EST');
       } else if (targetTitle.includes('納品')) {
@@ -226,35 +209,32 @@ const App: React.FC = () => {
     setIsGeneratingPdf(true);
 
     try {
-      // Determine device to adjust scale
-      // Optimize scale for size/quality balance (1.5 is approx 144dpi, good for print and performance)
       const scale = 1.5;
-
-      const A4_WIDTH_PX = 794;
-      const A4_HEIGHT_PX = 1123;
 
       const canvas = await html2canvas(previewRef.current, {
         scale: scale,
-        useCORS: true, // Keep CORS for external images, checking failure
+        useCORS: true,
         backgroundColor: '#ffffff',
-        // Force desktop viewport for consistent layout (Increase height appropriately)
         windowWidth: 1280,
-        // windowHeight: 3000, // Reduced or dynamic might be better, but fixed large is safer for clipping.
-        // Let's use a reasonable max height. 3000 is fine for desktop, but maybe too much for some.
-        // We will keep windowHeight but rely on lower scale to save memory.
         windowHeight: 3000,
-        // Enable logging for debug
         logging: false,
         onclone: (clonedDoc) => {
           const el = clonedDoc.querySelector('.print-area') as HTMLElement;
           if (el) {
-            // Ensure consistency during capture
-            el.style.width = '210mm';
-            el.style.minHeight = '297mm';
-            el.style.height = 'auto'; // Allow expansion
-            el.style.overflow = 'visible'; // Prevent clipping
-            el.style.padding = '10mm'; // Reduce padding to fit more content without shrinking
-            el.style.margin = '0';
+            if (template === 'receipt') {
+              el.style.width = '80mm';
+              el.style.minHeight = 'auto';
+              el.style.height = 'auto';
+              el.style.padding = '0';
+              el.style.margin = '0 auto';
+            } else {
+              el.style.width = '210mm';
+              el.style.minHeight = '297mm';
+              el.style.height = 'auto';
+              el.style.padding = '10mm';
+              el.style.margin = '0';
+            }
+            el.style.overflow = 'visible';
             el.style.transform = 'none';
             el.style.boxSizing = 'border-box';
             el.style.borderRadius = '0';
@@ -264,12 +244,8 @@ const App: React.FC = () => {
         }
       });
 
-      // Use JPEG with 0.90 quality to further reduce size
       const imgData = canvas.toDataURL('image/jpeg', 0.90);
 
-      // ... (rest of PDF logic is same)
-
-      // Initialize jsPDF with compression
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -281,22 +257,18 @@ const App: React.FC = () => {
       const pdfPageWidth = pdf.internal.pageSize.getWidth();
       const pdfPageHeight = pdf.internal.pageSize.getHeight();
 
-      // Fit to width (Priority: Fill viewport width)
       const ratio = pdfPageWidth / imgProps.width;
-
       const finalWidth = pdfPageWidth;
       const finalHeight = imgProps.height * ratio;
 
       let heightLeft = finalHeight;
       let position = 0;
 
-      // Add first page
       pdf.addImage(imgData, 'JPEG', 0, position, finalWidth, finalHeight);
       heightLeft -= pdfPageHeight;
 
-      // Add subsequent pages if needed
       while (heightLeft > 0) {
-        position -= pdfPageHeight; // Move the image up to show the next section
+        position -= pdfPageHeight;
         pdf.addPage();
         pdf.addImage(imgData, 'JPEG', 0, position, finalWidth, finalHeight);
         heightLeft -= pdfPageHeight;
@@ -307,16 +279,13 @@ const App: React.FC = () => {
       if (user) {
         const saved: SavedInvoice = { ...invoiceData, id: crypto.randomUUID(), createdAt: Date.now(), templateId: template };
         saveInvoiceToHistory(user.email, saved, user.id);
-        setHistory(prev => [saved, ...prev]); // Optimistic update
-        // getInvoiceHistory(user.email, user.id).then(setHistory); // Re-fetch to confirm (optional)
+        setHistory(prev => [saved, ...prev]);
       }
       alert("PDFをダウンロードしました！✨\n※いかなる損害についても当サービスは責任を負いません。");
     } catch (e: any) {
       console.error(e);
-      // Show more detailed error
       alert(`PDF作成に失敗しました。\nエラー内容: ${e.message || e}\nメモリ不足や画像読込エラーの可能性があります。`);
-    }
-    finally {
+    } finally {
       setIsGeneratingPdf(false);
     }
   };
@@ -334,7 +303,7 @@ const App: React.FC = () => {
           onLoginClick={() => setIsAuthModalOpen(true)}
           onLogoutClick={() => {
             supabase.auth.signOut();
-            logoutUser(); // Clear local storage if needed
+            logoutUser();
             setUser(null);
           }}
           onHistoryClick={() => setShowHistory(!showHistory)}
@@ -382,11 +351,10 @@ const App: React.FC = () => {
             <GuideTab setActiveTab={setActiveTab} />
           )}
 
-          {/* AdSense Unit: Sidebar Bottom */}
           <div className="mt-auto pt-4 space-y-4">
             <TipsCard />
             <AdUnit
-              slot="8901234567" // TODO: Replace with actual Sidebar Ad Slot ID
+              slot="8901234567"
               format="rectangle"
               responsive={true}
               className="min-h-[250px] bg-slate-50 rounded-2xl flex items-center justify-center text-xs text-slate-300"
@@ -408,7 +376,6 @@ const App: React.FC = () => {
 
           <div className="pt-2 border-t border-slate-50 flex flex-col gap-1.5 items-center">
             <div className="flex gap-2 opacity-50 hover:opacity-100 transition-opacity">
-              {/* Minimal Links */}
               <button onClick={() => setIsPrivacyOpen(true)} className="text-[8px] font-bold text-slate-400 hover:text-indigo-600 transition-colors">Privacy</button>
               <span className="text-[8px] text-slate-200">•</span>
               <button onClick={() => setIsTermsOpen(true)} className="text-[8px] font-bold text-slate-400 hover:text-indigo-600 transition-colors">Terms</button>
@@ -425,10 +392,9 @@ const App: React.FC = () => {
 
       <main className={`${mobileView === 'preview' ? 'flex' : 'hidden lg:flex'} flex-1 flex-col items-center overflow-y-auto p-4 lg:p-12 relative custom-scrollbar h-full`}>
 
-        {/* AdSense Unit: Top Banner */}
         <div className="w-full max-w-[210mm] mb-6 hidden lg:block no-print">
           <AdUnit
-            slot="1234567890" // TODO: Replace with actual Top Banner Ad Slot ID
+            slot="1234567890"
             format="horizontal"
             responsive={true}
             className="min-h-[90px] bg-slate-100 rounded-2xl flex items-center justify-center text-xs text-slate-300"
@@ -532,7 +498,6 @@ const App: React.FC = () => {
       <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} onLoginSuccess={setUser} />
       <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
       <PrivacyPolicyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
-      <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
       <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
       <ContactModal isOpen={isContactOpen} onClose={() => setIsContactOpen(false)} />
       <ConversionModal

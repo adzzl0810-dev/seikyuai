@@ -29,11 +29,23 @@ const Sidebar: React.FC<SidebarProps> = ({
     return (
         <>
             <header className="px-6 py-6 border-b flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3">
-                    <div className="bg-indigo-600 p-2.5 rounded-xl text-white shadow-xl"><FileText size={24} /></div>
+                <div className="flex items-center gap-3.5 group cursor-default">
+                    <div className="relative">
+                        <div className="absolute -inset-4 bg-indigo-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div className="relative transform transition-transform duration-300 group-hover:scale-105">
+                            <img
+                                src="/logo_transparent.png"
+                                alt="SeikyuAI Circuit Logo"
+                                className="w-14 h-14 object-contain drop-shadow-xl filter brightness-110"
+                            />
+                        </div>
+                    </div>
                     <div>
-                        <h1 className="font-black text-2xl tracking-tighter text-slate-800 leading-none">Seikyu <span className="text-indigo-600">AI</span></h1>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Smart Invoice Solution</span>
+                        <h1 className="font-black text-2xl tracking-tighter leading-none mb-1 flex items-baseline">
+                            <span className="bg-clip-text text-transparent bg-gradient-to-br from-slate-900 to-slate-700">Seikyu</span>
+                            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-violet-600 ml-0.5">AI</span>
+                        </h1>
+                        <span className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase block group-hover:text-indigo-500 transition-colors">Smart Invoice Solution</span>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -76,7 +88,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </button>
                     )}
                 </div>
-            </header>
+            </header >
 
             <nav className="flex px-2 pt-2 border-b bg-white shrink-0 overflow-x-auto no-scrollbar">
                 {(['items', 'client', 'issuer', 'settings', 'guide'] as const).map(tab => (
