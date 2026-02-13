@@ -1,7 +1,18 @@
 {
+    "headers": [
+        {
+            "source": "/ads.txt",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "text/plain"
+                }
+            ]
+        }
+    ],
     "rewrites": [
         {
-            "source": "/((?!assets/|.*\\..*).*)",
+            "source": "/((?!ads\\.txt|manifest\\.json|.*\\.png|.*\\.ico|.*\\.xml|assets/).*)",
             "destination": "/index.html"
         }
     ]
