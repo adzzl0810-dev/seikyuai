@@ -64,7 +64,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSu
         if (error) throw error;
 
         if (data.user) {
-          setMessage('確認メールを送信しました。メール内のリンクをクリックして登録を完了してください。');
+          setMessage('登録が完了しました。ログイン画面からログインしてください。');
           // Don't close immediately, let them see the message
         }
       }
