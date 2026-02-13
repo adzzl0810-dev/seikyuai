@@ -2,6 +2,8 @@ import React from 'react';
 import { Building, Upload, X, Stamp } from 'lucide-react';
 import { InvoiceData } from '../../../types';
 
+import { fetchAddressByZip } from '../../../services/addressService';
+
 interface IssuerTabProps {
     invoiceData: InvoiceData;
     setInvoiceData: React.Dispatch<React.SetStateAction<InvoiceData>>;
@@ -30,9 +32,6 @@ const IssuerTab: React.FC<IssuerTabProps> = ({
                     <label className={`text-[9px] font-black uppercase mb-1 block ${isRegNumValid(invoiceData.issuer.registrationNumber) ? 'text-green-600' : 'text-red-600'}`}>登録番号 (T+13桁)</label>
                     <input className="w-full bg-transparent border-none p-0 font-mono text-slate-800 font-black focus:ring-0" placeholder="T1234567890123" value={invoiceData.issuer.registrationNumber} onChange={e => setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, registrationNumber: e.target.value } }))} />
                 </div>
-                import {fetchAddressByZipCode} from '../../../utils/address';
-
-                // ... (inside component)
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-slate-50 p-4 rounded-2xl shadow-inner relative">
@@ -45,11 +44,11 @@ const IssuerTab: React.FC<IssuerTabProps> = ({
                             onBlur={async (e) => {
                                 const val = e.target.value;
                                 if (val.length >= 7) {
-                                    const addr = await fetchAddressByZipCode(val);
+                                    const addr = await fetchAddressByZip(val);
                                     if (addr) {
                                         setInvoiceData(d => ({
                                             ...d,
-                                            issuer: { ...d.issuer, address: addr.fullAddress }
+                                            issuer: { ...d.issuer, address: addr }
                                         }));
                                     }
                                 }

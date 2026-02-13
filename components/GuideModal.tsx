@@ -32,6 +32,25 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       ]
     },
     {
+      icon: <CheckCircle2 className="text-indigo-600" size={24} />,
+      title: "クラウド同期・履歴保存",
+      desc: "ログインすれば、データは安全にクラウドへ。",
+      details: [
+        { label: "自動保存", text: "PDF作成時に自動でクラウドへバックアップされます。" },
+        { label: "履歴機能", text: "過去に作成した請求書を呼び出して、複製・編集が可能です。" },
+        { label: "マルチデバイス", text: "PCで作成して、移動中にスマホで確認・修正もOK。" }
+      ]
+    },
+    {
+      icon: <Download className="text-blue-500" size={24} />,
+      title: "書類変換機能",
+      desc: "請求書以外の書類もワンクリックで。",
+      details: [
+        { label: "多様な形式", text: "見積書、納品書、領収書などへ瞬時に変換・複製できます。" },
+        { label: "番号採番", text: "変換時に新しい番号を自動で割り振ります（手動変更も可）。" }
+      ]
+    },
+    {
       icon: <Stamp className="text-red-500" size={24} />,
       title: "電子印影と署名",
       desc: "物理的なハンコなしで法的に有効な形式へ。",
@@ -45,9 +64,9 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
       title: "よくある質問 (FAQ)",
       desc: "困ったときはこちらを確認してください。",
       details: [
-        { label: "Q. 保存は？", text: "入力内容は自動でブラウザに保存されます。ログインすれば履歴に残ります。" },
+        { label: "Q. 保存は？", text: "ログイン時はクラウドに保存。ゲスト利用時はブラウザに一時保存されます。" },
         { label: "Q. 料金は？", text: "会員登録不要、完全無料です。維持管理のため広告を表示しています。" },
-        { label: "Q. セキュリティ", text: "入力データはサーバーに保存されません。PDF化も端末上で行われます。" }
+        { label: "Q. セキュリティ", text: "通信はSSLで暗号化され、Supabaseの堅牢な基盤で保護されています。" }
       ]
     }
   ];
@@ -65,7 +84,7 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
               <h2 className="text-3xl font-black tracking-tighter text-slate-800 leading-none mb-2">Seikyu AI 徹底活用ガイド</h2>
               <div className="flex items-center gap-3">
                 <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 border rounded-full">v1.2.0 Professional</span>
-                <span className="text-green-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><ShieldCheck size={12}/> インボイス対応済み</span>
+                <span className="text-green-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-1"><ShieldCheck size={12} /> インボイス対応済み</span>
               </div>
             </div>
           </div>
@@ -100,9 +119,9 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
           <div className="mt-10 bg-slate-900 p-10 rounded-[3rem] text-white relative overflow-hidden shadow-2xl">
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
               <div className="lg:col-span-2">
-                <h4 className="text-2xl font-black tracking-tight mb-3 flex items-center gap-3"><Lightbulb className="text-yellow-400"/> プロが教える最速作成テクニック</h4>
+                <h4 className="text-2xl font-black tracking-tight mb-3 flex items-center gap-3"><Lightbulb className="text-yellow-400" /> プロが教える最速作成テクニック</h4>
                 <p className="text-slate-400 text-sm font-bold leading-relaxed">
-                  作成履歴から「複製」して内容を少し書き換えるのが一番早いです。<br/>
+                  作成履歴から「複製」して内容を少し書き換えるのが一番早いです。<br />
                   また、ブランドカラーを設定しておくと、PDFの見た目が一気にプロ仕様になります。
                 </p>
               </div>
@@ -120,10 +139,10 @@ export const GuideModal: React.FC<GuideModalProps> = ({ isOpen, onClose }) => {
         {/* Footer */}
         <div className="p-8 border-t border-slate-100 bg-white flex flex-col sm:flex-row gap-6 items-center justify-between shrink-0">
           <div className="flex items-center gap-6 text-[10px] font-black text-slate-400 tracking-widest uppercase">
-            <span className="flex items-center gap-1.5"><ShieldQuestion size={14}/> Privacy First Policy</span>
-            <span className="flex items-center gap-1.5"><CheckCircle2 size={14}/> Compliance Verified</span>
+            <span className="flex items-center gap-1.5"><ShieldQuestion size={14} /> Privacy First Policy</span>
+            <span className="flex items-center gap-1.5"><CheckCircle2 size={14} /> Compliance Verified</span>
           </div>
-          <button 
+          <button
             onClick={onClose}
             className="w-full sm:w-auto bg-slate-900 hover:bg-black text-white font-black py-5 px-16 rounded-[1.5rem] shadow-2xl transition-all active:scale-95 hover:-translate-y-1"
           >

@@ -59,9 +59,34 @@ const GuideTab: React.FC<GuideTabProps> = ({ setActiveTab }) => {
                         </div>
                     </div>
 
-                    {/* Step 4: ダウンロード (New Focus) */}
+                    {/* Step 4: クラウド同期 (New) */}
                     <div className="flex gap-4">
-                        <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-indigo-200 shadow-xl shrink-0 z-10">4</div>
+                        <div className="w-10 h-10 rounded-full bg-white border-2 border-indigo-500 text-indigo-500 flex items-center justify-center font-black text-lg shadow-sm shrink-0 z-10">4</div>
+                        <div className="flex-1 bg-indigo-50/50 rounded-2xl p-5 border border-indigo-100">
+                            <h3 className="font-black text-indigo-900 mb-2 flex items-center gap-2"><CheckCircle2 size={14} /> クラウド同期・履歴</h3>
+                            <p className="text-xs text-indigo-800/70 font-bold leading-relaxed mb-1">
+                                ログインすると、作成した請求書が自動でクラウドに保存されます。
+                            </p>
+                            <p className="text-[10px] text-indigo-600 font-bold">
+                                ※ 履歴アイコンから過去のデータを呼び出して、複製や編集が可能です。スマホでも確認できます。
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Step 5: 書類変換 (New) */}
+                    <div className="flex gap-4">
+                        <div className="w-10 h-10 rounded-full bg-white border-2 border-blue-500 text-blue-500 flex items-center justify-center font-black text-lg shadow-sm shrink-0 z-10">5</div>
+                        <div className="flex-1 bg-blue-50/50 rounded-2xl p-5 border border-blue-100">
+                            <h3 className="font-black text-blue-900 mb-2">書類の変換・複製</h3>
+                            <p className="text-xs text-blue-800/70 font-bold leading-relaxed">
+                                ヘッダーのボタンから、作成中の請求書を「見積書」や「領収書」にワンクリックで変換できます。
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Step 6: ダウンロード */}
+                    <div className="flex gap-4">
+                        <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-indigo-200 shadow-xl shrink-0 z-10">6</div>
                         <div className="flex-1 bg-indigo-50/50 rounded-2xl p-5 border border-indigo-100">
                             <h3 className="font-black text-indigo-900 mb-2 flex items-center gap-2"><Download size={14} /> PDF発行</h3>
                             <p className="text-xs text-indigo-800/70 font-bold leading-relaxed mb-4">
