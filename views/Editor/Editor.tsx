@@ -303,192 +303,194 @@ export const Editor: React.FC = () => {
 
     return (
         <Layout>
-            <aside className={`${mobileView === 'edit' ? 'flex' : 'hidden lg:flex'} w-full lg:w-[480px] xl:w-[520px] bg-white border-r shadow-2xl flex-col z-20 overflow-hidden shrink-0 h-full`}>
+            <div className="flex flex-col lg:flex-row flex-1 w-full h-full overflow-hidden">
+                <aside className={`${mobileView === 'edit' ? 'flex' : 'hidden lg:flex'} w-full lg:w-[480px] xl:w-[520px] bg-white border-r shadow-2xl flex-col z-20 overflow-hidden shrink-0 h-full`}>
 
-                <Sidebar
-                    user={user}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    onLoginClick={() => setIsAuthModalOpen(true)}
-                    onLogoutClick={() => {
-                        supabase.auth.signOut();
-                        logoutUser();
-                        setUser(null);
-                    }}
-                    onHistoryClick={() => setShowHistory(!showHistory)}
-                    onConvertClick={() => setIsConversionOpen(true)}
-                />
-
-                <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-8 bg-white custom-scrollbar">
-                    {activeTab === 'items' && (
-                        <ItemsTab
-                            invoiceData={invoiceData}
-                            setInvoiceData={setInvoiceData}
-                            documentTitles={DOCUMENT_TITLES}
-                            unitSuggestions={UNIT_SUGGESTIONS}
-                            duplicateItem={duplicateItem}
-                        />
-                    )}
-
-                    {activeTab === 'client' && (
-                        <ClientTab
-                            invoiceData={invoiceData}
-                            setInvoiceData={setInvoiceData}
-                        />
-                    )}
-
-                    {activeTab === 'issuer' && (
-                        <IssuerTab
-                            invoiceData={invoiceData}
-                            setInvoiceData={setInvoiceData}
-                            handleStampUpload={handleStampUpload}
-                            isRegNumValid={isRegNumValid}
-                        />
-                    )}
-
-                    {activeTab === 'settings' && (
-                        <SettingsTab
-                            themeColor={themeColor}
-                            setThemeColor={setThemeColor}
-                            template={template}
-                            setTemplate={setTemplate}
-                            templates={TEMPLATES}
-                        />
-                    )}
-
-                    {activeTab === 'guide' && (
-                        <GuideTab setActiveTab={setActiveTab} />
-                    )}
-
-                    <div className="mt-auto pt-4 space-y-4">
-                        <TipsCard />
-                        <AdUnit
-                            slot="8901234567"
-                            format="rectangle"
-                            responsive={true}
-                            className="min-h-[250px] bg-slate-50 rounded-2xl flex items-center justify-center text-xs text-slate-300"
-                        />
-                    </div>
-                </div>
-
-                <div className="px-3 py-2 bg-white border-t shrink-0">
-                    <div className="flex justify-between items-end mb-2 px-1">
-                        <div className="flex flex-col">
-                            <span className="text-[8px] font-black text-slate-300 uppercase leading-none mb-0.5">合計（税込）</span>
-                            <span className="text-lg font-black text-slate-800 tracking-tighter leading-none">{totals.grandTotal.toLocaleString()}<span className="text-[9px] ml-0.5 text-slate-400 font-bold">円</span></span>
-                        </div>
-                        <div className="flex items-center gap-1 mb-0.5">
-                            <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
-                            <span className="text-[8px] font-black text-slate-300 tracking-widest uppercase scale-90 origin-right">Secured</span>
-                        </div>
-                    </div>
-
-                    <div className="pt-2 border-t border-slate-50 flex flex-col gap-1.5 items-center">
-                        <div className="flex gap-2 opacity-50 hover:opacity-100 transition-opacity">
-                            <button onClick={() => setIsPrivacyOpen(true)} className="text-[8px] font-bold text-slate-400 hover:text-indigo-600 transition-colors">Privacy</button>
-                            <span className="text-[8px] text-slate-200">•</span>
-                            <button onClick={() => setIsTermsOpen(true)} className="text-[8px] font-bold text-slate-400 hover:text-indigo-600 transition-colors">Terms</button>
-                            <span className="text-[8px] text-slate-200">•</span>
-                            <button onClick={() => setIsContactOpen(true)} className="text-[8px] font-bold text-slate-400 hover:text-indigo-600 transition-colors">Contact</button>
-                        </div>
-                        <div className="flex items-center gap-2 justify-center w-full">
-                            <button onClick={() => setIsGuideOpen(true)} className="text-[8px] font-black text-indigo-500 bg-indigo-50/50 hover:bg-indigo-50 px-2 py-1 rounded w-full transition-all text-center">使い方ガイド</button>
-                        </div>
-                        <p className="text-[7px] font-bold text-slate-200 text-center uppercase tracking-widest scale-75 origin-bottom">© 2024 Seikyu AI.</p>
-                    </div>
-                </div>
-            </aside>
-
-            <main className={`${mobileView === 'preview' ? 'flex' : 'hidden lg:flex'} flex-1 flex-col items-center overflow-y-auto p-4 lg:p-8 lg:pt-6 relative custom-scrollbar h-full`}>
-
-
-
-                <div className="w-full max-w-[210mm] mb-6 hidden lg:flex justify-between items-center no-print">
-                    <div className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-[1.5rem] shadow-sm border border-slate-100">
-                        <div className="bg-green-100 text-green-600 p-1.5 rounded-full"><ShieldCheck size={18} /></div>
-                        <div className="flex flex-col">
-                            <span className="text-xs font-black text-slate-800 tracking-tight">インボイス準拠</span>
-                        </div>
-                    </div>
-                    <button
-                        id="download-btn"
-                        onClick={downloadPdf}
-                        disabled={isGeneratingPdf}
-                        className="group bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-[1.5rem] font-bold text-sm flex items-center gap-3 shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isGeneratingPdf ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} strokeWidth={2.5} />}
-                        {isGeneratingPdf ? "PDF作成中..." : "PDFをダウンロード"}
-                    </button>
-                </div>
-
-                <div className="lg:hidden fixed top-6 right-6 z-[100] flex flex-col gap-2">
-                    <button
-                        id="download-btn-mobile"
-                        onClick={downloadPdf}
-                        disabled={isGeneratingPdf}
-                        className="bg-indigo-600 text-white p-2.5 rounded-full shadow-2xl active:scale-90 transition-transform disabled:opacity-70 disabled:bg-indigo-400"
-                        title="PDFを保存"
-                    >
-                        {isGeneratingPdf ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
-                    </button>
-                </div>
-
-                <div className="relative group transition-all duration-700 origin-top mb-24 lg:mt-0 mt-8 max-w-full">
-                    <div className="absolute -inset-10 bg-gradient-to-br from-indigo-500/5 to-transparent blur-3xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity"></div>
-                    <div className="relative max-w-full overflow-hidden flex justify-center scale-75 sm:scale-90 md:scale-95 lg:scale-100 origin-top">
-                        <InvoicePreview
-                            data={invoiceData}
-                            totals={totals}
-                            templateId={template}
-                            previewRef={previewRef}
-                            accentColor={themeColor}
-                        />
-                    </div>
-                </div>
-
-                <div className="w-full max-w-[210mm] mt-8 mb-12 hidden lg:block no-print">
-                    <AdUnit
-                        slot="1234567890"
-                        format="horizontal"
-                        responsive={true}
-                        className="min-h-[90px] bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-xs text-slate-300"
+                    <Sidebar
+                        user={user}
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        onLoginClick={() => setIsAuthModalOpen(true)}
+                        onLogoutClick={() => {
+                            supabase.auth.signOut();
+                            logoutUser();
+                            setUser(null);
+                        }}
+                        onHistoryClick={() => setShowHistory(!showHistory)}
+                        onConvertClick={() => setIsConversionOpen(true)}
                     />
-                </div>
 
-                <SEOContent />
+                    <div className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-8 bg-white custom-scrollbar">
+                        {activeTab === 'items' && (
+                            <ItemsTab
+                                invoiceData={invoiceData}
+                                setInvoiceData={setInvoiceData}
+                                documentTitles={DOCUMENT_TITLES}
+                                unitSuggestions={UNIT_SUGGESTIONS}
+                                duplicateItem={duplicateItem}
+                            />
+                        )}
 
-                {showHistory && (
-                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[110] flex justify-end">
-                        <div className="w-full max-w-md bg-white h-full shadow-2xl p-10 flex flex-col animate-in slide-in-from-right duration-500">
-                            <div className="flex items-center justify-between mb-10 shrink-0">
-                                <h2 className="text-3xl font-black tracking-tighter flex items-center gap-4"><HistoryIcon className="text-indigo-600" size={32} /> 作成履歴</h2>
-                                <button onClick={() => setShowHistory(false)} className="p-4 hover:bg-slate-50 rounded-3xl transition-all"><X size={28} /></button>
-                            </div>
-                            <div className="flex-1 overflow-y-auto space-y-5 pr-2 custom-scrollbar">
-                                {history.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-40 text-slate-200">
-                                        <HistoryIcon size={80} className="mb-6 opacity-20" />
-                                        <p className="font-black text-xl">履歴はありません</p>
-                                    </div>
-                                ) : (
-                                    history.sort((a, b) => b.createdAt - a.createdAt).map(item => (
-                                        <div key={item.id} className="group p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] hover:bg-white hover:border-indigo-400 hover:shadow-xl transition-all cursor-pointer relative overflow-hidden" onClick={() => { setInvoiceData(item); setTemplate(item.templateId); setShowHistory(false); setMobileView('edit'); }}>
-                                            <div className="text-[10px] font-black text-indigo-400 mb-2 uppercase tracking-widest">{new Date(item.createdAt).toLocaleString()}</div>
-                                            <div className="font-black text-slate-800 text-lg mb-1 truncate">{item.client.name}</div>
-                                            <div className="text-sm font-bold text-slate-400">#{item.invoiceNumber}</div>
-                                            <button onClick={(e) => {
-                                                e.stopPropagation();
-                                                deleteInvoiceFromHistory(user!.email, item.id, user!.id)
-                                                    .then(() => setHistory(prev => prev.filter(h => h.id !== item.id)));
-                                            }} className="absolute top-4 right-4 bg-white text-slate-200 hover:text-red-500 shadow-sm p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all border border-slate-100"><Trash2 size={16} /></button>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
+                        {activeTab === 'client' && (
+                            <ClientTab
+                                invoiceData={invoiceData}
+                                setInvoiceData={setInvoiceData}
+                            />
+                        )}
+
+                        {activeTab === 'issuer' && (
+                            <IssuerTab
+                                invoiceData={invoiceData}
+                                setInvoiceData={setInvoiceData}
+                                handleStampUpload={handleStampUpload}
+                                isRegNumValid={isRegNumValid}
+                            />
+                        )}
+
+                        {activeTab === 'settings' && (
+                            <SettingsTab
+                                themeColor={themeColor}
+                                setThemeColor={setThemeColor}
+                                template={template}
+                                setTemplate={setTemplate}
+                                templates={TEMPLATES}
+                            />
+                        )}
+
+                        {activeTab === 'guide' && (
+                            <GuideTab setActiveTab={setActiveTab} />
+                        )}
+
+                        <div className="mt-auto pt-4 space-y-4">
+                            <TipsCard />
+                            <AdUnit
+                                slot="8901234567"
+                                format="rectangle"
+                                responsive={true}
+                                className="min-h-[250px] bg-slate-50 rounded-2xl flex items-center justify-center text-xs text-slate-300"
+                            />
                         </div>
                     </div>
-                )}
-            </main>
+
+                    <div className="px-3 py-2 bg-white border-t shrink-0">
+                        <div className="flex justify-between items-end mb-2 px-1">
+                            <div className="flex flex-col">
+                                <span className="text-[8px] font-black text-slate-300 uppercase leading-none mb-0.5">合計（税込）</span>
+                                <span className="text-lg font-black text-slate-800 tracking-tighter leading-none">{totals.grandTotal.toLocaleString()}<span className="text-[9px] ml-0.5 text-slate-400 font-bold">円</span></span>
+                            </div>
+                            <div className="flex items-center gap-1 mb-0.5">
+                                <div className="w-1 h-1 bg-green-500 rounded-full animate-pulse"></div>
+                                <span className="text-[8px] font-black text-slate-300 tracking-widest uppercase scale-90 origin-right">Secured</span>
+                            </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-50 flex flex-col gap-1.5 items-center">
+                            <div className="flex gap-2 opacity-50 hover:opacity-100 transition-opacity">
+                                <button onClick={() => setIsPrivacyOpen(true)} className="text-[8px] font-bold text-slate-400 hover:text-indigo-600 transition-colors">Privacy</button>
+                                <span className="text-[8px] text-slate-200">•</span>
+                                <button onClick={() => setIsTermsOpen(true)} className="text-[8px] font-bold text-slate-400 hover:text-indigo-600 transition-colors">Terms</button>
+                                <span className="text-[8px] text-slate-200">•</span>
+                                <button onClick={() => setIsContactOpen(true)} className="text-[8px] font-bold text-slate-400 hover:text-indigo-600 transition-colors">Contact</button>
+                            </div>
+                            <div className="flex items-center gap-2 justify-center w-full">
+                                <button onClick={() => setIsGuideOpen(true)} className="text-[8px] font-black text-indigo-500 bg-indigo-50/50 hover:bg-indigo-50 px-2 py-1 rounded w-full transition-all text-center">使い方ガイド</button>
+                            </div>
+                            <p className="text-[7px] font-bold text-slate-200 text-center uppercase tracking-widest scale-75 origin-bottom">© 2024 Seikyu AI.</p>
+                        </div>
+                    </div>
+                </aside>
+
+                <main className={`${mobileView === 'preview' ? 'flex' : 'hidden lg:flex'} flex-1 flex-col items-center overflow-y-auto p-4 lg:p-8 lg:pt-6 relative custom-scrollbar h-full`}>
+
+
+
+                    <div className="w-full max-w-[210mm] mb-6 hidden lg:flex justify-between items-center no-print">
+                        <div className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-[1.5rem] shadow-sm border border-slate-100">
+                            <div className="bg-green-100 text-green-600 p-1.5 rounded-full"><ShieldCheck size={18} /></div>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-black text-slate-800 tracking-tight">インボイス準拠</span>
+                            </div>
+                        </div>
+                        <button
+                            id="download-btn"
+                            onClick={downloadPdf}
+                            disabled={isGeneratingPdf}
+                            className="group bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-[1.5rem] font-bold text-sm flex items-center gap-3 shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isGeneratingPdf ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} strokeWidth={2.5} />}
+                            {isGeneratingPdf ? "PDF作成中..." : "PDFをダウンロード"}
+                        </button>
+                    </div>
+
+                    <div className="lg:hidden fixed top-6 right-6 z-[100] flex flex-col gap-2">
+                        <button
+                            id="download-btn-mobile"
+                            onClick={downloadPdf}
+                            disabled={isGeneratingPdf}
+                            className="bg-indigo-600 text-white p-2.5 rounded-full shadow-2xl active:scale-90 transition-transform disabled:opacity-70 disabled:bg-indigo-400"
+                            title="PDFを保存"
+                        >
+                            {isGeneratingPdf ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}
+                        </button>
+                    </div>
+
+                    <div className="relative group transition-all duration-700 origin-top mb-24 lg:mt-0 mt-8 max-w-full">
+                        <div className="absolute -inset-10 bg-gradient-to-br from-indigo-500/5 to-transparent blur-3xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity"></div>
+                        <div className="relative max-w-full overflow-hidden flex justify-center scale-75 sm:scale-90 md:scale-95 lg:scale-100 origin-top">
+                            <InvoicePreview
+                                data={invoiceData}
+                                totals={totals}
+                                templateId={template}
+                                previewRef={previewRef}
+                                accentColor={themeColor}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="w-full max-w-[210mm] mt-8 mb-12 hidden lg:block no-print">
+                        <AdUnit
+                            slot="1234567890"
+                            format="horizontal"
+                            responsive={true}
+                            className="min-h-[90px] bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-xs text-slate-300"
+                        />
+                    </div>
+
+                    <SEOContent />
+
+                    {showHistory && (
+                        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[110] flex justify-end">
+                            <div className="w-full max-w-md bg-white h-full shadow-2xl p-10 flex flex-col animate-in slide-in-from-right duration-500">
+                                <div className="flex items-center justify-between mb-10 shrink-0">
+                                    <h2 className="text-3xl font-black tracking-tighter flex items-center gap-4"><HistoryIcon className="text-indigo-600" size={32} /> 作成履歴</h2>
+                                    <button onClick={() => setShowHistory(false)} className="p-4 hover:bg-slate-50 rounded-3xl transition-all"><X size={28} /></button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-5 pr-2 custom-scrollbar">
+                                    {history.length === 0 ? (
+                                        <div className="flex flex-col items-center justify-center py-40 text-slate-200">
+                                            <HistoryIcon size={80} className="mb-6 opacity-20" />
+                                            <p className="font-black text-xl">履歴はありません</p>
+                                        </div>
+                                    ) : (
+                                        history.sort((a, b) => b.createdAt - a.createdAt).map(item => (
+                                            <div key={item.id} className="group p-6 bg-slate-50 border border-slate-100 rounded-[2.5rem] hover:bg-white hover:border-indigo-400 hover:shadow-xl transition-all cursor-pointer relative overflow-hidden" onClick={() => { setInvoiceData(item); setTemplate(item.templateId); setShowHistory(false); setMobileView('edit'); }}>
+                                                <div className="text-[10px] font-black text-indigo-400 mb-2 uppercase tracking-widest">{new Date(item.createdAt).toLocaleString()}</div>
+                                                <div className="font-black text-slate-800 text-lg mb-1 truncate">{item.client.name}</div>
+                                                <div className="text-sm font-bold text-slate-400">#{item.invoiceNumber}</div>
+                                                <button onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    deleteInvoiceFromHistory(user!.email, item.id, user!.id)
+                                                        .then(() => setHistory(prev => prev.filter(h => h.id !== item.id)));
+                                                }} className="absolute top-4 right-4 bg-white text-slate-200 hover:text-red-500 shadow-sm p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-all border border-slate-100"><Trash2 size={16} /></button>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </main>
+            </div>
 
             <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-slate-900/90 backdrop-blur-xl p-1 rounded-full shadow-2xl z-[100] border border-white/20">
                 <button
