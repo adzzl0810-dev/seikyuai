@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
     History as HistoryIcon, LogOut, FileText, Info,
     Building, Palette, BookOpen, Copy
@@ -29,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     return (
         <>
             <header className="px-6 py-6 border-b flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-3.5 group cursor-default">
+                <Link to="/" className="flex items-center gap-3.5 group cursor-pointer">
                     <div className="relative">
                         <div className="absolute -inset-4 bg-indigo-500/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                         <div className="relative transform transition-transform duration-300 group-hover:scale-105">
@@ -47,7 +48,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </h1>
                         <span className="text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase block group-hover:text-indigo-500 transition-colors">Smart Invoice Solution</span>
                     </div>
-                </div>
+                </Link>
                 <div className="flex items-center gap-2">
                     <button onClick={onConvertClick} className="p-2.5 hover:bg-slate-50 rounded-xl text-slate-500 transition-all border border-slate-100 shadow-sm active:scale-95" title="書類を変換・複製"><Copy size={20} /></button>
                     {user ? (

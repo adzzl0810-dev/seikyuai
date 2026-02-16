@@ -1,6 +1,7 @@
-import React from 'react';
-import { Building, Upload, X, Stamp } from 'lucide-react';
+import React, { useState } from 'react';
+import { Building, Upload, X, Stamp, PenTool } from 'lucide-react';
 import { InvoiceData } from '../../../types';
+import { StampGeneratorModal } from '../../StampGeneratorModal';
 
 import { fetchAddressByZip } from '../../../services/addressService';
 
@@ -17,8 +18,19 @@ const IssuerTab: React.FC<IssuerTabProps> = ({
     isRegNumValid,
     handleStampUpload
 }) => {
+    const [isStampModalOpen, setIsStampModalOpen] = useState(false);
+
+    const handleStampGenerated = (dataUrl: string) => {
+        setInvoiceData(d => ({ ...d, issuer: { ...d.issuer, stampImageUrl: dataUrl, enableStamp: true } }));
+    };
+
     return (
         <div className="space-y-6 animate-in fade-in">
+            <StampGeneratorModal
+                isOpen={isStampModalOpen}
+                onClose={() => setIsStampModalOpen(false)}
+                onGenerate={handleStampGenerated}
+            />
             <div className="p-6 bg-white border-4 border-slate-50 rounded-[3rem] space-y-6 shadow-sm">
                 <div className="flex items-center gap-3 mb-4">
                     <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-2xl"><Building size={24} /></div>
@@ -99,6 +111,13 @@ const IssuerTab: React.FC<IssuerTabProps> = ({
                                 <span className="text-[10px] font-black text-slate-400 uppercase">画像をアップ</span>
                                 <input type="file" accept="image/*" className="hidden" onChange={handleStampUpload} />
                             </label>
+                            <button
+                                onClick={() => setIsStampModalOpen(true)}
+                                className="flex-1 cursor-pointer flex flex-col items-center justify-center p-4 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all group"
+                            >
+                                <PenTool size={22} className="text-red-400 mb-2 group-hover:scale-110" />
+                                <span className="text-[10px] font-black text-slate-400 uppercase">印鑑を作成</span>
+                            </button>
                             {invoiceData.issuer.stampImageUrl && (
                                 <div className="relative w-20 h-20 bg-white rounded-2xl border-2 border-indigo-100 flex items-center justify-center p-3">
                                     <img src={invoiceData.issuer.stampImageUrl} className="max-w-full max-h-full object-contain" />

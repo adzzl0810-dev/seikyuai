@@ -1,4 +1,3 @@
-
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -10,12 +9,12 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Seikyu AI - スマート請求書作成',
+        name: 'Seikyu AI | 請求書作成',
         short_name: 'Seikyu AI',
-        description: '会員登録不要・無料のモダンな請求書作成サービス',
-        theme_color: '#4f46e5',
+        description: '完全無料・登録不要のインボイス対応請求書作成サービス',
+        theme_color: '#ffffff',
         background_color: '#ffffff',
         display: 'standalone',
         scope: '/',

@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
-Sitemap: https://seikyuai.com/sitemap.xml
+Sitemap: https://seikyuai.vercel.app/sitemap.xml
