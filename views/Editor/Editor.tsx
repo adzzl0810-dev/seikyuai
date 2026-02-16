@@ -399,32 +399,24 @@ export const Editor: React.FC = () => {
                 </div>
             </aside>
 
-            <main className={`${mobileView === 'preview' ? 'flex' : 'hidden lg:flex'} flex-1 flex-col items-center overflow-y-auto p-4 lg:p-12 relative custom-scrollbar h-full`}>
+            <main className={`${mobileView === 'preview' ? 'flex' : 'hidden lg:flex'} flex-1 flex-col items-center overflow-y-auto p-4 lg:p-8 lg:pt-6 relative custom-scrollbar h-full`}>
 
-                <div className="w-full max-w-[210mm] mb-6 hidden lg:block no-print">
-                    <AdUnit
-                        slot="1234567890"
-                        format="horizontal"
-                        responsive={true}
-                        className="min-h-[90px] bg-slate-100 rounded-2xl flex items-center justify-center text-xs text-slate-300"
-                    />
-                </div>
 
-                <div className="w-full max-w-[210mm] mb-12 hidden lg:flex justify-between items-center no-print">
-                    <div className="flex items-center gap-5 bg-white px-7 py-4 rounded-[2rem] shadow-xl border border-white">
-                        <div className="bg-green-100 text-green-600 p-2 rounded-full"><ShieldCheck size={24} /></div>
+
+                <div className="w-full max-w-[210mm] mb-6 hidden lg:flex justify-between items-center no-print">
+                    <div className="flex items-center gap-3 bg-white px-5 py-2.5 rounded-[1.5rem] shadow-sm border border-slate-100">
+                        <div className="bg-green-100 text-green-600 p-1.5 rounded-full"><ShieldCheck size={18} /></div>
                         <div className="flex flex-col">
-                            <span className="text-sm font-black text-slate-800 tracking-tight">インボイス準拠済み</span>
-                            <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">Validated Registration No.</span>
+                            <span className="text-xs font-black text-slate-800 tracking-tight">インボイス準拠</span>
                         </div>
                     </div>
                     <button
                         id="download-btn"
                         onClick={downloadPdf}
                         disabled={isGeneratingPdf}
-                        className="group bg-slate-900 hover:bg-black text-white px-12 py-5 rounded-[2rem] font-black text-sm flex items-center gap-4 shadow-2xl transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="group bg-slate-900 hover:bg-black text-white px-8 py-3 rounded-[1.5rem] font-bold text-sm flex items-center gap-3 shadow-lg transition-all hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                        {isGeneratingPdf ? <Loader2 size={24} className="animate-spin" /> : <Download size={24} strokeWidth={3} />}
+                        {isGeneratingPdf ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} strokeWidth={2.5} />}
                         {isGeneratingPdf ? "PDF作成中..." : "PDFをダウンロード"}
                     </button>
                 </div>
@@ -452,6 +444,15 @@ export const Editor: React.FC = () => {
                             accentColor={themeColor}
                         />
                     </div>
+                </div>
+
+                <div className="w-full max-w-[210mm] mt-8 mb-12 hidden lg:block no-print">
+                    <AdUnit
+                        slot="1234567890"
+                        format="horizontal"
+                        responsive={true}
+                        className="min-h-[90px] bg-slate-50 border border-slate-100 rounded-xl flex items-center justify-center text-xs text-slate-300"
+                    />
                 </div>
 
                 <SEOContent />
